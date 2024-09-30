@@ -15,15 +15,7 @@ export interface IInput {
     rows?: number;
 }
 
-const Input: React.FC<IInput> = ({
-                                     className,
-                                     title,
-                                     required,
-                                     refs,
-                                     type,
-                                     multiline,
-                                     rows,
-                                 }) => {
+const Input: React.FC<IInput> =({ className, title, required, refs, type, multiline, rows, }) => {
     return (
         <Box className="pr-2">
             <Typography variant="h3">

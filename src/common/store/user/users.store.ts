@@ -2,7 +2,7 @@ import {create} from 'zustand';
 import { devtools, persist  } from 'zustand/middleware';
 import { UserState} from './users.defs';
 import { userStateInit } from './users.states';
-import { mountStoreDevtool } from 'simple-zustand-devtools';
+// import { mountStoreDevtool } from 'simple-zustand-devtools';
 
 export const useUserStore = create<UserState>()(
     devtools(
@@ -15,6 +15,6 @@ export const useUserStore = create<UserState>()(
     )
 );
 
-if (process.env.NODE_ENV === 'development') {
-    mountStoreDevtool('UsersStore', useUserStore);
-}
+// if (process.env.NODE_ENV === 'development') {
+//     mountStoreDevtool('UsersStore', useUserStore);
+// }
