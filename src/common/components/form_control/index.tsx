@@ -19,14 +19,14 @@ interface CustomFormControlProps {
 }
 
 const CustomFormControl: React.FC<CustomFormControlProps> = ({
-                                                                 name,
-                                                                 control,
-                                                                 label,
-                                                                 error,
-                                                                 startAdornment,
-                                                                 placeholder,
-                                                                 ...rest
-                                                             }) => {
+    name,
+    control,
+    label,
+    error,
+    startAdornment,
+    placeholder,
+    ...rest
+}) => {
     return (
         <FormControl fullWidth variant="outlined" error={!!error}>
             <InputLabel htmlFor={name}>{label}</InputLabel>
