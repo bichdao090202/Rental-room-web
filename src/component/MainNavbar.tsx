@@ -85,7 +85,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
               textDecoration: 'none',
             }}
           >
-            DC8
+            Rental
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>

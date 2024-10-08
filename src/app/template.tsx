@@ -2,13 +2,14 @@
 
 import { AdminPanelSettings, Home, Person } from "@mui/icons-material";
 import { useEffect, useState } from "react";
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, ThemeProvider } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import { getServerSession } from "next-auth";
 import Footer from "@/component/Footer";
 import MainNavbar from "@/component/MainNavbar";
 import Sidebar from "@/component/sidebar";
+import theme from "@/styles/theme";
 
 const items = [
     {
@@ -49,10 +50,12 @@ export default function Template({ children }: { children: React.ReactNode }) {
     // }
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <MainNavbar toggleSidebar={toggleSidebar} />
-            {children}
-            
-        </Box>
+        <ThemeProvider theme={theme}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', paddingTop: '64px' }}>
+                <MainNavbar toggleSidebar={toggleSidebar} />
+                <Box sx={{ display: 'flex', flex: 1 , flexGrow: 1, }} >{children}</Box>
+            </Box>
+        </ThemeProvider>
+
     );
 }

@@ -35,13 +35,13 @@ export default function LoginPage() {
     //   router.push("/");
     // }
   }
-
   return (
     <>
-      <Typography variant="h3" sx={{ textAlign: 'center', marginTop: 20 }}>Log in</Typography>
       <Box component="div" sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Box component="div" sx={{ marginTop: 2 }}>
+        <Typography variant="h3" sx={{ textAlign: 'center', marginTop: 15 }}>Log in</Typography>
+        <Box component="div" sx={{ marginTop: 1 }}>
           <Box component="form" onSubmit={onSubmit}>
+            
             <ValidateTextField
               type="text"
               name="username"
@@ -84,7 +84,6 @@ export default function LoginPage() {
           </Box>
         </Box>
         <Box component="div" sx={{ margin: 2 }}>
-
           <SocialLogin />
           <Typography sx={{ marginTop: 2, textAlign: "center" }}>Don&apos;t have an account? <Link href="/sign-up" className="font-bold underline">Sign up</Link></Typography>
         </Box>

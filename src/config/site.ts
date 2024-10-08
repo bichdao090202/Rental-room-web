@@ -48,17 +48,12 @@ export const siteConfig = {
       href: "/",
     },
     {
-      label: "Lịch sử thuê phòng",
-      href: "/",
-    },
-    {
-      label: "Hợp đồng của tôi",
-      href: "/",
+      label: "Quản lý thuê phòng",
+      href: "/manager",
     },
     {
       label: "Hỗ trợ và liên hệ",
       href: "/",
     },
-    
 	],
 };

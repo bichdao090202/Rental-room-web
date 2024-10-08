@@ -1,5 +1,6 @@
 import { IconSvgProps } from "@/types";
 
+
 const GoogleIcon: React.FC<IconSvgProps> = ({
   size = 24,
   width,
