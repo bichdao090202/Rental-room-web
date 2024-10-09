@@ -264,7 +264,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
                     </MenuItem>
                   ))}
                   <MenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
-                    <Typography textAlign="center">Sign out</Typography>
+                    <Typography textAlign="center">Đăng xuất</Typography>
                   </MenuItem>
                 </Menu>
               </>
