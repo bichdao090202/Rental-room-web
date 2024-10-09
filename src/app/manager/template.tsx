@@ -67,33 +67,33 @@ import MainNavbar from '@/component/MainNavbar';
 const items = [
     {
         title: 'Thuê',
-        key: '/rent',
-        items: [
+        key: '/renter',
+        items: [ //src\app\manager\landlord\booking-request
             {
                 title: 'Yêu cầu thuê',
-                key: '/manager/renter',
+                key: '/manager/renter/booking-request',
             },
             {
                 title: 'Hợp đồng',
-                key: '/manager/renter',
+                key: '/manager/renter/contract',
             },
         ],
     },
     {
         title: 'Cho thuê',
-        key: '/lease',
+        key: '/lessor',
         items: [
             {
                 title: 'Yêu cầu thuê',
-                key: '/manager/landlord',
+                key: '/manager/lessor/booking-request',
             },
             {
                 title: 'Hợp đồng',
-                key: '/manager/landlord',
+                key: '/manager/lessor/contract',
             },
             {
                 title: 'Phòng trọ',
-                key: '/manager/landlord',
+                key: '/manager/lessor/room',
             },
         ],
     },
@@ -133,9 +133,9 @@ export default function Template({ children }: { children: React.ReactNode }) {
                 <Box sx={{ display: 'flex' }}>
                     <Sidebar
                         items={items}
-                        collapseMenu={collapseMenu}
-                        expandedMenus={expandedMenus}
-                        onMenuToggle={handleMenuToggle}
+                        // collapseMenu={collapseMenu}
+                        // expandedMenus={expandedMenus}
+                        // onMenuToggle={handleMenuToggle}
                     />
                     <Box
                         component="main"

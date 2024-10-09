@@ -1,4 +1,3 @@
-// components/PdfUploader.tsx
 'use client'
 import React, { useState } from 'react';
 import { Button, Typography } from '@mui/material';

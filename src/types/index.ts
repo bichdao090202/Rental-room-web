@@ -20,18 +20,19 @@ export interface ChargeableService {
   price: number;
 }
 
-export interface Property {
+export interface Room {
   id: number;
   title: string;
   image: string;
   address: string;
+  
 }
 
 export interface Contract {
   id: number;
   renterId?: number;
   landlordId: number;
-  property?: Property;
+  property?: Room;
   name: string;
   content: string;
   dateComplete?: Date;
@@ -46,15 +47,15 @@ export interface Contract {
 }
 
 export interface BookingRequest {
-  request_id: number;
+  id: number;
   renter_id: number;
-  landlord_id: number;
-  property: Property;
+  lessor_id: number;
+  room: Room;
   request_date: Date;
   status: string;
   note: string;
   message_from_renter: string;
-  message_from_landlord?: string;
+  message_from_lessor?: string;
   start_date: Date;
   rental_duration: number;
   response_date?: Date;
@@ -91,10 +92,10 @@ export const contracts: Contract[] = [
 
 export const bookingRequests: BookingRequest[] = [
   {
-    request_id: 1,
+    id: 1,
     renter_id: 1,
-    landlord_id: 2,
-    property: {
+    lessor_id: 2,
+    room: {
       id: 1,
       title: "Cho thuê phòng trọ tiện nghi",
       image: "https://via.placeholder.com/150",
@@ -104,7 +105,7 @@ export const bookingRequests: BookingRequest[] = [
     status: "Processing",
     note: "Waiting for landlord approval",
     message_from_renter: "Tôi muốn thuê trọ của bạn",
-    message_from_landlord: undefined,
+    message_from_lessor: undefined,
     start_date: new Date(),
     rental_duration: 3,
     response_date: new Date(),

@@ -126,18 +126,13 @@
 // };
 // export default Sidebar;
 
-
 'use client';
 
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Box,
-  Collapse,
   Drawer,
   List,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
   Theme,
 } from '@mui/material';
@@ -145,14 +140,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 
 export interface ISidebar extends React.ComponentPropsWithoutRef<'div'> {
-  items: any;
-  collapseMenu: boolean;
-  expandedMenus: string[];
-  onMenuToggle: (key: string) => void;
+  items: any[];
 }
 
-const Sidebar: React.FC<ISidebar> = ({ items, collapseMenu, expandedMenus, onMenuToggle }) => {
-  const pathName = usePathname();
+const Sidebar: React.FC<ISidebar> = ({ items }) => {
+  const pathname = usePathname();
   const router = useRouter();
 
   const SidebarItem = ({
@@ -165,62 +157,48 @@ const Sidebar: React.FC<ISidebar> = ({ items, collapseMenu, expandedMenus, onMen
     depth: number;
   }) => {
     const { title, items, key } = item;
-    const isExpanded = expandedMenus.includes(key);
+    const isSelected = pathname === key;
 
-    const handleClick = (keyName: string) => {
-      if (Array.isArray(items)) {
-        onMenuToggle(keyName);
-      } else {
-        router.push(keyName);
-      }
+    const handleClick = () => {
+      router.push(key);
     };
-
-    let expandIcon;
-    if (Array.isArray(items) && items.length) {
-      expandIcon = isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />;
-    }
 
     return (
       <>
         <ListItemButton
-          onClick={() => handleClick(key)}
-          selected={pathName === key}
-          sx={(theme: Theme) => ({
+          onClick={handleClick}
+          selected={isSelected}
+          sx={() => ({
             pl: depth * depthStep,
             '&.Mui-selected': {
-              backgroundColor: theme.palette.primary.main,
-              color: theme.palette.primary.contrastText,
+              backgroundColor: '#d3d3d3',
               '&:hover': {
-                backgroundColor: theme.palette.primary.dark,
+                backgroundColor: 'gray',
               },
             },
           })}
         >
           <ListItemText primary={title} />
-          {expandIcon}
         </ListItemButton>
-        <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-          {Array.isArray(items) ? (
-            <List disablePadding dense>
-              {items.map((subItem, index) => (
-                <SidebarItem
-                  key={`${subItem.key}${index}`}
-                  item={subItem}
-                  depth={depth + 1}
-                  depthStep={depthStep}
-                />
-              ))}
-            </List>
-          ) : null}
-        </Collapse>
+        {Array.isArray(items) ? (
+          <List disablePadding dense>
+            {items.map((subItem, index) => (
+              <SidebarItem
+                key={`${subItem.key}${index}`}
+                item={subItem}
+                depth={depth + 1}
+                depthStep={depthStep}
+              />
+            ))}
+          </List>
+        ) : null}
       </>
     );
   };
 
   return (
     <Drawer
-      open={!collapseMenu}
-      variant="persistent"
+      variant="permanent"
       anchor="left"
       sx={(theme: Theme) => ({
         '& .MuiDrawer-paper': {
@@ -228,8 +206,8 @@ const Sidebar: React.FC<ISidebar> = ({ items, collapseMenu, expandedMenus, onMen
           width: 250,
           backgroundColor: theme.palette.background.default,
           color: theme.palette.text.primary,
-          marginTop: '70px', // Chiều cao của AppBar
-          height: 'calc(100% - 70px)', // Chiều cao toàn màn hình trừ đi chiều cao của AppBar
+          marginTop: '70px', 
+          height: 'calc(100% - 70px)', 
         },
       })}
     >

@@ -49,7 +49,7 @@ export const siteConfig = {
     },
     {
       label: "Quản lý thuê phòng",
-      href: "/manager",
+      href: "/manager/renter/booking-request",
     },
     {
       label: "Hỗ trợ và liên hệ",

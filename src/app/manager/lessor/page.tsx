@@ -57,9 +57,9 @@ import CustomModal from '@/common/components/modal';
 
 const LandlordDashboard = () => {
     const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false); // Trạng thái tải
-    const [responseFile, setResponseFile] = useState(''); // Chuỗi file base64
-    const [successModalOpen, setSuccessModalOpen] = useState(false); // Modal thành công
+    const [loading, setLoading] = useState(false); 
+    const [responseFile, setResponseFile] = useState(''); 
+    const [successModalOpen, setSuccessModalOpen] = useState(false); 
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);

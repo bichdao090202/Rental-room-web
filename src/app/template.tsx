@@ -11,18 +11,6 @@ import MainNavbar from "@/component/MainNavbar";
 import Sidebar from "@/component/sidebar";
 import theme from "@/styles/theme";
 
-const items = [
-    {
-        title: 'User',
-        icon: <Person color="primary" />,
-        key: '/user',
-    },
-    {
-        title: 'Role',
-        icon: <AdminPanelSettings color="primary" />,
-        key: '/role',
-    },
-];
 
 export default function Template({ children }: { children: React.ReactNode }) {
     const [collapseMenu, setCollapseMenu] = useState(false);

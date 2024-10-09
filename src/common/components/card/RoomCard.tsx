@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
 
 interface Product {
   id: number;
@@ -22,12 +22,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         sx={{ height: '200px', objectFit: 'cover' }}
       />
       <CardContent>
-        <Typography gutterBottom variant="h6" component="div">
+        <Typography gutterBottom variant="h6" >
           {product.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          ${product.price.toFixed(2)}
-        </Typography>
+        {/* <Box  color="text.secondary">          
+          ${product.price}
+        </Box> */}
       </CardContent>
     </Card>
   );
