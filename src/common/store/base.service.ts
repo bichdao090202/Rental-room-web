@@ -53,7 +53,7 @@ export const post = async (
 
   const res = await response.json();
   return res;
-
+//const response = await axios.get(`http://ec2-13-236-165-0.ap-southeast-2.compute.amazonaws.com:3006/api/v1/booking-requests`);
   // if (!response.ok) {
   //   throw Error('Server error!');
   // }

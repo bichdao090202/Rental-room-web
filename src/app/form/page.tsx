@@ -1,10 +1,11 @@
 "use client"
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { Button } from '@mui/material';
 import VpnKeyRounded from '@mui/icons-material/VpnKeyRounded';
-import CustomFormControl from "@/common/components/form_control";
+import CustomFormControl from "@/common/components/FormControl";
 import Box from "@mui/material/Box";
+import axios from 'axios';
 
 interface FormInputs {
     username: string;
@@ -17,6 +18,20 @@ const MyForm: React.FC = () => {
     const onSubmit: SubmitHandler<FormInputs> = (data) => {
         console.log(data);
     };
+
+    useEffect(() => {
+        const fetchBookingRequests = async () => {
+            try {
+              const response = await axios.get(`http://ec2-13-236-165-0.ap-southeast-2.compute.amazonaws.com:3006/api/v1/booking-requests`);
+                // const result = res.data;
+                console.log(response);                
+                
+            } catch (error) {
+                console.error('Error fetching booking requests:', error);
+            } 
+        };
+        fetchBookingRequests();
+      }, []);
 
     return (
         <Box className="max-w-lg mx-auto p-8 pt-5 bg-white rounded-lg border border-gray-300 shadow-xl space-y-5" component="form" onSubmit={handleSubmit(onSubmit)}>

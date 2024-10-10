@@ -20,13 +20,13 @@ interface SmallCardProps {
 
 const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonClick }) => {
     return (
-        <Card sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center', border: '1px solid', borderColor:'gray', paddingX: '10px', paddingY:'5px' }}>
+        <Card sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center', border: '1px solid', borderColor: 'gray', paddingX: '10px', paddingY: '5px' }}>
             {dataSource.image && (
                 <Avatar
                     src={dataSource.image}
                     alt="Image"
                     variant="square"
-                    sx={{ width: 150, height: '100%', objectFit: 'cover' }}
+                    sx={{ width: '20%', minWidth: '150px', height: '100%', objectFit: 'cover' }}
                 />
             )}
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', pl: 2 }}>
@@ -35,17 +35,17 @@ const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonCl
                     {headCells.map((cell) => (
                         cell.render ? "" :
                             <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                <Typography variant="body2" color="textSecondary" sx={{ mr: 1 }}>{cell.label}:</Typography>
+                                <Typography variant="body2" sx={{ mr: 1 }}>{cell.label}: {dataSource[cell.id]}</Typography>
                                 <Typography variant="body2">
-                                    {dataSource[cell.id]}
+
                                 </Typography>
                             </Box>
                     ))}
                 </CardContent>
             </Box>
-            <CardActions sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
+            <CardActions sx={{ display: 'flex', flexDirection: 'column', width: '20%', justifyContent: 'center', alignItems: 'center', height:'100%' }}>
                 {headCells.map((cell) => (
-                    <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                    <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'center' }}>
                         {cell.render ? cell.render(dataSource[cell.id]) : ""}
                     </Box>
                 ))}

@@ -1,24 +1,3 @@
-const isParsableError = (error: unknown): error is Error => {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    (error as Error).message !== undefined
-  );
-};
-
-export const checkPermission = (
-  permission: string[],
-  permissions: string[],
-) => {
-  return permission.some((p: string) => [...permissions, 'home'].includes(p));
-};
-
-export const parseError = (error: unknown): string => {
-  if (isParsableError(error)) return error.message;
-
-  return 'Ups... Something went wrong...';
-};
-
 const stringToColor = (string: string) => {
   let hash = 0;
   let i;
@@ -55,3 +34,27 @@ export const capitalizeFirstLetter = (str: string) => {
 export const lowercaseFirstLetter = (str: string) => {
   return str.charAt(0).toLowerCase() + str.slice(1);
 };
+
+export function formatCurrency(price: number): string {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+export function formatDay(date: Date): string {
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+export function formatDatetime(datetime: Date): string {
+  return datetime.toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}

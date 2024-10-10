@@ -1,4 +1,4 @@
-export interface HeadCell {
+export interface HeadCard {
   id: string;
   label: string;
   sx?: any;

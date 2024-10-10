@@ -8,13 +8,14 @@ import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, Outli
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { ValidateTextField } from "@/component/ValidateTextField";
 import SocialLogin from "@/component/SocialLogin";
+import { getSession, signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // const { status } = useSession();
   const [showPassword, setShowPassword] = React.useState(false);
-  const [formValue, setFormValue] = useState({ username: '', password: '' });
+  const [formValue, setFormValue] = useState({ phone: '09050156278', password: '1231' });
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -24,17 +25,25 @@ export default function LoginPage() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // const callbackUrl = searchParams.get('callbackUrl');
-    // const res = await signIn("credentials", {
-    //   username: formValue.username,
-    //   password: formValue.password,
-    //   callbackUrl: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
-    //   redirect: false
-    // });
+    const res = await signIn("credentials", {
+      username: formValue.phone,
+      password: formValue.password,
+      callbackUrl: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
+      redirect: false
+    });
     // if (res?.ok) {
     //   router.push("/");
     // }
   }
+
+  useEffect ( () => {
+    const test = async () => {
+      const userSession = await getSession()
+      console.log(userSession);
+    }
+    
+    test();
+  },[])
   return (
     <>
       <Box component="div" sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
@@ -44,14 +53,14 @@ export default function LoginPage() {
             
             <ValidateTextField
               type="text"
-              name="username"
-              label="Username"
-              placeholder="Enter your username"
-              value={formValue.username}
-              onChange={(event) => setFormValue({ ...formValue, username: event.target.value })}
+              name="phone"
+              label="Phone"
+              placeholder="Enter your number phone"
+              value={formValue.phone}
+              onChange={(event) => setFormValue({ ...formValue, phone: event.target.value })}
               required
-              error={!formValue.username} variant={"outlined"}
-              errorText="Please enter your email"
+              error={!formValue.phone} variant={"outlined"}
+              errorText="Please enter your number phone"
             />
             <ValidateTextField
               type={showPassword ? 'text' : 'password'}

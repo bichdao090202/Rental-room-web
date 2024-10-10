@@ -8,7 +8,7 @@ import { getSession } from "next-auth/react";
 import { getServerSession } from "next-auth";
 import Footer from "@/component/Footer";
 import MainNavbar from "@/component/MainNavbar";
-import Sidebar from "@/component/sidebar";
+import Sidebar from "@/component/Sidebar";
 import theme from "@/styles/theme";
 
 
@@ -43,7 +43,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
                 <MainNavbar toggleSidebar={toggleSidebar} />
                 <Box sx={{ display: 'flex', flex: 1 , flexGrow: 1, }} >{children}</Box>
             </Box>
-        </ThemeProvider>
+         </ThemeProvider>
 
     );
 }

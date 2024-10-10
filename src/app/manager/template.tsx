@@ -61,7 +61,7 @@
 
 import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
-import Sidebar from '@/component/sidebar';
+import Sidebar from '@/component/Sidebar';
 import MainNavbar from '@/component/MainNavbar';
 
 const items = [

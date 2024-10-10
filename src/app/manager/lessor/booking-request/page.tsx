@@ -2,103 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal } from '@mui/material';
 import SmallCard from '@/common/components/card/SmallCard';
-import { HeadCell } from '@/common/components/card/headCell';
+import { HeadCard } from '@/common/components/card/headCard';
 import CustomModal from '@/common/components/modal';
 import PdfUploader from '@/common/components/PdfUploader';
 import { get } from '@/common/store/base.service';
-
-interface BookingRequest {
-    id: number;
-    created_at: string;
-    updated_at: string;
-    renter_id: number;
-    lessor_id: number;
-    room_id: number;
-    room: {
-        id: number;
-        title: string;
-        price: number;
-        images: string[];
-    };
-    request_date: string;
-    status: string;
-    note: string;
-    message_from_renter: string;
-    start_date: string;
-    rental_duration: number;
-}
+import { BookingRequest } from '@/types';
 
 export default function Page() {
-    const mockBookingRequests: BookingRequest[] = [
-        {
-            id: 1,
-            created_at: "2023-09-01T10:00:00Z",
-            updated_at: "2023-09-01T10:00:00Z",
-            renter_id: 101,
-            lessor_id: 201,
-            room_id: 1,
-            room: {
-                id: 1,
-                title: "Cozy Room in the City Center",
-                price: 5000000,
-                images: [
-                    "https://www.wilsonhomes.com.au/sites/default/files/styles/blog_hero_banner/public/My%20project%20-%202023-06-20T095818.329%20%281%29_0.jpg?itok=UbtVbhT0",
-                ],
-            },
-            request_date: "2023-10-01T12:00:00Z",
-            status: "PROCESSING",
-            note: "Looking forward to renting this room.",
-            message_from_renter: "Please let me know if the room is available.",
-            start_date: "2023-10-15T12:00:00Z",
-            rental_duration: 12,
-        },
-        {
-            id: 2,
-            created_at: "2023-09-05T15:00:00Z",
-            updated_at: "2023-09-05T15:00:00Z",
-            renter_id: 102,
-            lessor_id: 202,
-            room_id: 2,
-            room: {
-                id: 2,
-                title: "Spacious Room with a View",
-                price: 6000000,
-                images: [
-                    "https://www.wilsonhomes.com.au/sites/default/files/styles/blog_hero_banner/public/My%20project%20-%202023-06-20T095818.329%20%281%29_0.jpg?itok=UbtVbhT0",
-                ],
-            },
-            request_date: "2023-10-02T12:00:00Z",
-            status: "SUCCESS",
-            note: "Excited to move in!",
-            message_from_renter: "I will be available for a visit.",
-            start_date: "2023-10-20T12:00:00Z",
-            rental_duration: 6,
-        },
-        {
-            id: 2,
-            created_at: "2023-09-05T15:00:00Z",
-            updated_at: "2023-09-05T15:00:00Z",
-            renter_id: 102,
-            lessor_id: 202,
-            room_id: 2,
-            room: {
-                id: 2,
-                title: "Spacious Room with a View",
-                price: 6000000,
-                images: [
-                    "https://www.wilsonhomes.com.au/sites/default/files/styles/blog_hero_banner/public/My%20project%20-%202023-06-20T095818.329%20%281%29_0.jpg?itok=UbtVbhT0",
-                ],
-            },
-            request_date: "2023-10-02T12:00:00Z",
-            status: "FAILURE",
-            note: "Excited to move in!",
-            message_from_renter: "I will be available for a visit.",
-            start_date: "2023-10-20T12:00:00Z",
-            rental_duration: 6,
-        },
-    ];
-
-    const headCells: HeadCell[] = [
+    const headCells: HeadCard[] = [
         { id: 'status', label: 'Trạng thái' },
         { id: 'note', label: 'Ghi chú' },
         { id: 'start_date', label: 'Ngày bắt đầu' },
@@ -129,7 +40,7 @@ export default function Page() {
         }
     ]
 
-    const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>(mockBookingRequests);
+    const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
     const [loadingPage, setLoadingPage] = useState(false);
 
     const [open, setOpen] = useState(false);
@@ -190,19 +101,21 @@ export default function Page() {
         const fetchBookingRequests = async () => {
             try {
                 const res = await get(`booking-requests`);
-                const result = res.data;
-                console.log(result);                
-                if (result.status === 'SUCCESS') {
-                    setBookingRequests(result.data);
-                }
+                const result = res.data;    
+                console.log(res);   
+                setBookingRequests(result);       
+                // if (result.status == "SUCCESS") {
+                //     console.log(res);
+                    
+                //     setBookingRequests(result);
+                // }
             } catch (error) {
                 console.error('Error fetching booking requests:', error);
-            } finally {
-                setLoadingPage(false);
-            }
+            } 
+            
         };
-        // fetchBookingRequests();
-    }, []);
+        fetchBookingRequests();
+    }, [bookingRequests]);
 
     if (loadingPage) {
         return <Typography variant="h6">Loading...</Typography>;
@@ -215,7 +128,7 @@ export default function Page() {
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {bookingRequests.map((request) => (
-                    <SmallCard
+                    <SmallCard key={request.id}
                         dataSource={{
                             image: request.room.images?.[0] || '',
                             title: request.room.title,
@@ -269,7 +182,6 @@ export default function Page() {
                 </Box>
             </CustomModal>
 
-            {/* Modal thông báo thành công */}
             <Modal
                 open={successModalOpen}
                 onClose={() => setSuccessModalOpen(false)}

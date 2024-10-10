@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AppBar,
   Button,
@@ -15,42 +15,57 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { formatCurrency } from '@/common/utils/helpers';
+import CustomFormControl from '@/common/components/FormControl';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { get, post } from '@/common/store/base.service';
+import axios from 'axios';
+import { Room } from '@/types';
 
 interface Params {
-    params: {
-      roomId: string;
-    };
-  }
+  params: {
+    roomId: number;
+  };
+}
+
+interface FormInputs {
+  duration: number;
+  message: string;
+  date: string;
+}
+
+
 
 export default function Page({ params }: Params) {
-    const { roomId } = params; 
-    
-    const room = {
-        id: 1,
-        title: "Căn hộ cho thuê giá rẻ",
-        type: 2,
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQI3poe0CGMok1sqDPSkHL74DJs3eG8ASb2Ew&s",
-        address: {
-            city: "TP.HCM",
-            district: "Gò Vấp",
-            ward: "phường 4",
-            detail: "số 9 Nguyễn Văn Nghi",
-        },
-        utilities: [1, 2, 3, 4],
-        price: 3000000,
-        deposit: 3000000,
-        gender: 0,
-        roomSize: 20,
-        owner_id: 1,
-        description: "Nhà rộng 10x20m, 3 phòng ngủ...",
+  const { roomId } = params;
+  const { control, handleSubmit, formState: { errors } } = useForm<FormInputs>({
+    mode: 'onSubmit'  // Hoặc 'onChange' 
+  });
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+    const body = {
+      renter_id: 2,
+      lessor_id: 1,
+      room_id: Number(roomId),
+      status: "PROCESSING",
+      note: "Waiting for landlord approval",
+      message_from_renter: data.message,
+      start_date: new Date(data.date).toISOString(),
+      rental_duration: Number(data.duration),
     }
+    
+    const response = await post(`booking-requests`,body)
+    if (response.status == "SUCCESS"){
+      alert("Đã gửi yêu cầu đặt phòng thành công")
+      setOpenBookingModal(false)
+    }
+    else
+      alert("Thao tác thất bại, vui lòng thử lại")
+  };
 
-    const [openBookingModal, setOpenBookingModal] = useState(false);
+  const [openBookingModal, setOpenBookingModal] = useState(false);
   const [openTermsModal, setOpenTermsModal] = useState(false);
-  const [startDate, setStartDate] = useState();
-  const [rentalDuration, setRentalDuration] = useState('');
-  const [messageFromRenter, setMessageFromRenter] = useState('');
   const [snackOpen, setSnackOpen] = useState(false);
+  const [room, setRoom] = useState<Room>();
 
   const handleOpenBookingModal = () => setOpenBookingModal(true);
   const handleCloseBookingModal = () => setOpenBookingModal(false);
@@ -58,120 +73,159 @@ export default function Page({ params }: Params) {
   const handleCloseTermsModal = () => setOpenTermsModal(false);
   const handleSnackClose = () => setSnackOpen(false);
 
-    const getGender = (gender:number) => {
-        switch (gender) {
-          case 1:
-            return 'Nữ';
-          case 2:
-            return 'Nam';
-          default:
-            return 'Cả hai';
-        }
-      };
-      const handleBookingRequest = () => {
-        if (startDate && rentalDuration) {
-          const bookingRequest = {
-            requestId: 1, 
-            renterId: 2, 
-            landlordId: room.owner_id,
-            room,
-            requestDate: new Date(),
-            messageFromRenter: messageFromRenter || '',
-            startDate,
-            rentalDuration,
-          };
-    
-          console.log('Booking request created:', bookingRequest);
-          handleCloseBookingModal();
-        } else {
-          setSnackOpen(true);
-        }
-      };
+  const getGender = (gender: number) => {
+    switch (gender) {
+      case 1:
+        return 'Nữ';
+      case 2:
+        return 'Nam';
+      default:
+        return 'Cả hai';
+    }
+  };
 
-    return (
-        <Box className="w-full pt-5 pb-5">
-            <img src={room.image} alt={room.title} className="w-full h-[500px] object-contain" />
 
-          <Typography variant="h5">{room.title}</Typography>
-          <Typography variant="h6" color="error">
-            {room.price} đ
+
+  useEffect(() => {
+    const fetchBookingRequests = async () => {
+      try {
+        const response = await get(`rooms/${roomId}`)
+        const result = response.data;
+        console.log(result);
+        setRoom(result);
+      } catch (error) {
+        console.error('Error fetching booking requests:', error);
+      }
+    };
+    fetchBookingRequests();
+  }, []);
+
+  return (
+    room &&
+    <Box className="w-full space-y-1">
+      <img src={room.images[0]} alt={room.title} className="w-full h-[400px] object-contain pb-5" />
+
+      <Box>
+        <Typography variant="h5" line-height='5px'>{room.title}</Typography>
+        <Typography variant="h6" color="error" >
+          {formatCurrency(room.price)}
+        </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          width: '80%',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+        }}
+      >
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ width: '12rem', height: '3rem' }}
+          onClick={handleOpenBookingModal}
+        >
+          <Typography sx={{ fontWeight: 'bold' }}>Yêu cầu thuê</Typography>
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ width: '13rem', height: '3rem' }}
+          onClick={handleOpenTermsModal}
+        >
+          <Typography sx={{ fontWeight: 'bold' }}>Điều khoản dịch vụ</Typography>
+        </Button>
+      </Box>
+
+      <Box>
+        <Typography variant="h6">
+          Địa chỉ:
+        </Typography>
+        <Typography>
+          {`${room.address.provinceName}, ${room.address.districtName}, ${room.address.wardName}, ${room.address.detail}`}
+        </Typography>
+        <Typography>
+          Kích thước phòng: {room.acreage} m²
+        </Typography>
+
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Chi tiết:
+        </Typography>
+
+        <Box>
+          {/* <Typography style={{
+            whiteSpace: 'pre-line',
+            lineHeight: 2,
+            textIndent: '2em',
+            marginBottom: '1em', 
+            padding: '10px', 
+          }}>
+            {room.description}
+          </Typography> */}
+          <Typography style={{
+            whiteSpace: 'pre-line',
+            lineHeight: 2,
+            padding: '10px',
+          }}>
+            <div style={{ textIndent: '2em', marginBottom: '1em' }}>
+              {room.description.split('\n').map((paragraph, index) => (
+                <p key={index} style={{ textIndent: '2em', marginBottom: '1em' }}>
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           </Typography>
 
-          <Grid container spacing={2} justifyContent="center" heigh='150px'>            
-            <Grid item xs={6}>
-              <Button variant="contained" color="primary" onClick={handleOpenBookingModal}>
-                Yêu cầu thuê
-              </Button>
-            </Grid>
-            <Grid item xs={6}>
-              <Button variant="contained" color="primary" onClick={handleOpenTermsModal}>
-                Điều khoản dịch vụ
-              </Button>
-            </Grid>
-          </Grid>
-
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Địa chỉ:
-          </Typography>
-          <Typography>
-            {`${room.address.city}, ${room.address.district}, ${room.address.ward}, ${room.address.detail}`}
-          </Typography>
-
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Mô tả:
-          </Typography>
-          <Typography>{room.description}</Typography>
-
-          <Typography variant="body1" sx={{ mt: 2 }}>
-            Kích thước phòng: {room.roomSize} m²
-          </Typography>
-          <Typography variant="body1">
+          {/* <Typography>
             Giới tính: {getGender(room.gender)}
-          </Typography>
+          </Typography> */}
+        </Box>
+      </Box>
 
-
-      <Dialog open={openBookingModal} onClose={handleCloseBookingModal}>
+      <Dialog open={openBookingModal} onClose={handleCloseBookingModal} component="form" onSubmit={handleSubmit(onSubmit)} >
         <DialogTitle>Yêu cầu thuê</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Ngày bắt đầu"
-            type="date"
-            fullWidth
-            // onChange={(e) => setStartDate(e.target.value)}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-          <TextField
-            label="Thời gian thuê (tháng)"
-            select
-            fullWidth
-            value={rentalDuration}
-            onChange={(e) => setRentalDuration(e.target.value)}
-            SelectProps={{
-              native: true,
-            }}
-            sx={{ mt: 2 }}
-          >
-            <option value="" disabled>
-              Chọn
-            </option>
-            {[3, 6, 12].map((duration) => (
-              <option key={duration} value={duration}>
-                {duration} tháng
-              </option>
-            ))}
-          </TextField>
-          <TextField
-            label="Lời nhắn đến chủ trọ"
-            fullWidth
-            onChange={(e) => setMessageFromRenter(e.target.value)}
-            sx={{ mt: 2 }}
-          />
+          <Box className="max-w-lg mx-auto pt-5 bg-white rounded-lg space-y-5" >
+            <CustomFormControl
+              name="duration"
+              control={control}
+              type="number"
+              label="Thời gian thuê"
+              placeholder="Thời gian thuê (tháng)"
+              error={errors.duration}
+              rules={{
+                required: 'Trường này là bắt buộc',
+                min: { value: 1, message: 'Thời gian thuê tối thiểu là 1 tháng' }
+              }}
+            />
+            <CustomFormControl
+              name="message"
+              control={control}
+              type="text"
+              label="Tin nhắn"
+              placeholder="Tin nhắn cho chủ trọ"
+              error={errors.message}
+              rules={{ required: 'Trường này là bắt buộc' }}
+            />
+            <CustomFormControl
+              name="date"
+              control={control}
+              type="date"
+              label="Chọn ngày bắt đầu"
+              error={errors.date}
+              rules={{ required: 'Trường này là bắt buộc' }}
+            />
+
+          </Box>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseBookingModal}>Hủy</Button>
-          <Button onClick={handleBookingRequest}>Gửi yêu cầu</Button>
+          <Button type="submit" variant="contained" color="primary" >
+            Gửi yêu cầu
+          </Button>
         </DialogActions>
       </Dialog>
       <Dialog open={openTermsModal} onClose={handleCloseTermsModal}>
@@ -192,7 +246,6 @@ export default function Page({ params }: Params) {
         onClose={handleSnackClose}
         message="Vui lòng nhập đầy đủ thông tin"
       />
-        {roomId}
-      </Box>
-    )
+    </Box>
+  )
 }
