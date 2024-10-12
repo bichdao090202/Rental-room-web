@@ -22,6 +22,9 @@ export const get = async (url: string, opts?: BaseOpts): Promise<any> => {
     },
   );
 
+  console.log(response);
+  
+
   if (!response.ok) {
     throw Error('Server error!');
   }

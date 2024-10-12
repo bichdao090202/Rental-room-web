@@ -89,7 +89,7 @@ export default function Page({ params }: Params) {
   useEffect(() => {
     const fetchBookingRequests = async () => {
       try {
-        const response = await get(`rooms/${roomId}`)
+        const response = await get(`rooms/1`)
         const result = response.data;
         console.log(result);
         setRoom(result);

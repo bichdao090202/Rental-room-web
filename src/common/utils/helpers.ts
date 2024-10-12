@@ -58,3 +58,56 @@ export function formatDatetime(datetime: Date): string {
     hour12: false,
   });
 }
+
+// export const getBase64FromPdf = async (file: File): Promise<string | null> => {
+//   return new Promise((resolve, reject) => {
+//       const reader = new FileReader();
+//       reader.onloadend = () => {
+//           const base64String = reader.result as string;
+//           const base64Data = base64String.split(',')[1];
+//           resolve(base64Data);
+//       };
+//       reader.onerror = () => {
+//           reject(null);
+//       };
+//       reader.readAsDataURL(file);
+//   });
+// };
+
+export const getBase64FromPdf = async (file: File): Promise<string | null> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const arrayBuffer = reader.result as ArrayBuffer; 
+      const byteNumbers = new Uint8Array(arrayBuffer);
+      const byteString = byteNumbers.reduce((data, byte) => data + String.fromCharCode(byte), ''); // Tạo chuỗi từ Uint8Array
+      const base64String = btoa(byteString); 
+      resolve(base64String);
+    };
+    reader.onerror = () => {
+      reject(null);
+    };
+    reader.readAsArrayBuffer(file); 
+  });
+};
+
+export const base64ToFile = (base64: string, filename: string): File => {
+  const byteCharacters = atob(base64); 
+  const byteNumbers = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i); 
+  }
+  const blob = new Blob([byteNumbers], { type: 'application/pdf' }); 
+  return new File([blob], filename, { type: 'application/pdf' });
+};
+
+// export const base64ToFile = (base64: string, filename: string): File => {
+//   const byteCharacters = atob(base64); 
+//   const byteNumbers = new Array(byteCharacters.length);
+//   for (let i = 0; i < byteCharacters.length; i++) {
+//     byteNumbers[i] = byteCharacters.charCodeAt(i); 
+//   }
+//   const byteArray = new Uint8Array(byteNumbers); 
+//   const blob = new Blob([byteArray], { type: 'application/pdf' });
+//   return new File([blob], filename, { type: 'application/pdf' });
+// };

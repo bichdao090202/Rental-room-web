@@ -151,3 +151,51 @@ export const bookingRequests: BookingRequest[] = [
     contract_id: undefined,
   },
 ];
+
+interface BankCard {
+  bankName: string;
+  cardNumber: string;
+  cardHolder: string;
+  issueDate: string;
+  otpPassword: string;
+}
+
+const bankCard: BankCard = {
+  bankName: 'NCB',
+  cardNumber: '9704198526191432198',
+  cardHolder: 'NGUYEN VAN A',
+  issueDate: '07/15',
+  otpPassword: '123456',
+};
+
+const mockroom: Room = {
+  id: 1,
+  title: 'Phòng 101',
+  address: {
+    id: 1,
+    detail: '123 Đường ABC',
+    districtName: 'Quận 1',
+    provinceName: 'TP.HCM',
+    wardName: 'Phường Bến Nghé',
+  },
+  price: 5000000,
+  description: 'Phòng rộng rãi, thoáng mát, gần trung tâm.',
+  owner_id: 1001,
+  images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyWQtw2z4U9W_mIx80C5TvMWGYzut4mK-lXw&s'],
+}
+
+const mockBookingRequest = {
+  id: 1,
+  renter_id: 1001,
+  lessor_id: 2001,
+  room: mockroom,
+  request_date: new Date('2024-10-01'),
+  status: 'waiting',
+  note: 'Chờ chủ nhà phê duyệt',
+  message_from_renter: 'Tôi muốn thuê phòng này trong 6 tháng.',
+  message_from_lessor: 'Vui lòng cung cấp thông tin thêm về bạn.',
+  start_date: new Date('2024-11-01'),
+  rental_duration: 6,
+  response_date: new Date('2024-10-05'),
+  contract_id: 301,
+}

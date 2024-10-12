@@ -1,13 +1,14 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal } from '@mui/material';
-import SmallCard from '@/common/components/card/SmallCard';
-import { HeadCard } from '@/common/components/card/headCard';
+import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
 import { get } from '@/common/store/base.service';
-import { BookingRequest } from '@/types';
+import { BookingRequest, Room } from '@/types';
+import PaymentButton from '@/payment';
 
 export default function Page() {
-    const headCells: HeadCard[] = [
+    const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
+    const headCells: HeadCell[] = [
         { id: 'status', label: 'Trạng thái' },
         { id: 'note', label: 'Ghi chú' },
         { id: 'start_date', label: 'Ngày bắt đầu' },
@@ -19,15 +20,19 @@ export default function Page() {
             (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {(
-                        <Button onClick={() => { }} variant="contained" color="success" >
+                        <Button onClick={() => {
+                            console.log(row.id);
+                            
+                        }} 
+                            variant="contained" color="success" >
                             Thanh toán
                         </Button>
                     )}
 
                     {true && (
-                        <Button variant="contained" color="error" >
-                            Hủy
-                        </Button>
+                        <PaymentButton>
+
+                        </PaymentButton>
                     )}
 
                     <Button variant="contained" color="primary" >
@@ -37,9 +42,6 @@ export default function Page() {
             )
         }
     ]
-
-    const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
-    const [loadingPage, setLoadingPage] = useState(false);
 
     useEffect(() => {
         const fetchBookingRequests = async () => {
@@ -54,11 +56,7 @@ export default function Page() {
 
         };
         fetchBookingRequests();
-    }, [bookingRequests]);
-
-    if (loadingPage) {
-        return <Typography variant="h6">Loading...</Typography>;
-    }
+    }, []);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', width: '70vw' }}>
@@ -76,11 +74,9 @@ export default function Page() {
                             start_date: new Date(request.start_date).toLocaleDateString(),
                             rental_duration: request.rental_duration,
                             message_from_renter: request.message_from_renter,
+                            id: request.id,
                         }}
                         headCells={headCells}
-                        onButtonClick={(actionType) => {
-                            console.log(`${actionType} clicked for request ID: ${request.id}`);
-                        }}
                     />
                 ))}
             </Box>

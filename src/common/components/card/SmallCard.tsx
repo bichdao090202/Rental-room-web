@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardContent, CardActions, Typography, Box, Avatar, Button } from '@mui/material';
 
-interface HeadCell {
+export interface HeadCell {
     id: string;
     label: string;
     render?: (value: any) => React.ReactNode;
@@ -46,7 +46,7 @@ const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonCl
             <CardActions sx={{ display: 'flex', flexDirection: 'column', width: '20%', justifyContent: 'center', alignItems: 'center', height:'100%' }}>
                 {headCells.map((cell) => (
                     <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'center' }}>
-                        {cell.render ? cell.render(dataSource[cell.id]) : ""}
+                        {cell.render ? cell.render(dataSource) : ""}
                     </Box>
                 ))}
             </CardActions>
