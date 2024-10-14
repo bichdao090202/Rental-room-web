@@ -112,6 +112,8 @@ export const put = async (
     opts = { ...defaultOpts, ...opts };
   }
 
+  console.log(`process.env.NEXT_PUBLIC_API_URL}/${url}`);
+
   const response = await fetch(
     `${opts?.onRouteHandler ? '' : process.env.NEXT_PUBLIC_API_URL}/${url}`,
     {
@@ -125,16 +127,5 @@ export const put = async (
   );
   const res = await response.json();
   return res;
-
-  // if (!response.ok) {
-  //   throw Error('Server error!');
-  // }
-
-  // try {
-  //   return await response.json();
-  // } catch (parseError) {
-  //   // Handle parsing error gracefully if response is not in JSON format
-  //   console.error('JSON Parsing Error:', parseError);
-  //   throw new Error('Invalid JSON response from the server');
-  // }
+  
 };

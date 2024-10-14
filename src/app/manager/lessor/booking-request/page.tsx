@@ -9,6 +9,8 @@ import { BookingRequest } from '@/types';
 import { base64ToFile, formatDay, getBase64FromPdf } from '@/common/utils/helpers';
 import { usersSelectors } from '@/common/store/user/users.selectors';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import OpenPdfButton from '@/common/components/OpenPdfButton';
 
 export default function Page() {
     const headCells: HeadCell[] = [
@@ -24,7 +26,7 @@ export default function Page() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {row.note == "Waiting for landlord approval" && (
                         <Button onClick={() => {
-                            handleOpen();
+                            setOpen(true);
                             setSelectedRequest(row);
                         }} variant="contained" color="success" >
                             Đồng ý
@@ -36,6 +38,13 @@ export default function Page() {
                             Từ chối
                         </Button>
                     )}
+
+{row.note === "Waiting for renter to sign and pay" && row.message_from_lessor && (
+            <OpenPdfButton 
+                fileBase64={row.message_from_lessor} 
+                filename={"SignDocument.pdf"} 
+            /> 
+        )} 
 
                     <Button variant="contained" color="primary" onClick={() => {
                         router.push(`/room/${row.id}`)
@@ -60,28 +69,30 @@ export default function Page() {
     const user = usersSelectors.useUserInformation();
     const [filebase64, setFilebase64] = useState<string>();
 
-    const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const handleConfirm = async () => {
         setLoading(true);
         const fileBase64 = await getBase64FromPdf(selectedFile!);
         await handleSignDoc(fileBase64!);
         setLoading(false);
+        setOpen(false)
         setSuccessModalOpen(true);
-        updateBookingRequest();
     };
 
-    const updateBookingRequest = async () => {
+    const updateBookingRequest = async (basa64) => {
         if (!selectedRequest) return;
 
         const updatedRequest = {
             ...selectedRequest,
-            note: "Waiting for renter to sign and pay",
-            message_from_lessor: filebase64,
+            note: "Waiting for renter to sign and pay",            
+            message_from_lessor: basa64!,
         };
 
-        const res = put(`booking-requests/${selectedRequest.id}`, updatedRequest);
+        console.log(updatedRequest)
+
+        const res = await put(`booking-requests/${selectedRequest.id}`, updatedRequest);
         console.log(res);
+
     }
 
     const handleSignDoc = async (fileBase64: string) => {
@@ -104,26 +115,28 @@ export default function Page() {
                 widthRectangle: 100
             }
         }
-        // const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(body),
-        // });
-        // const data = await response.json();
-        // if (response.ok) {
-        //     const file = base64ToFile(data.signedFileBase64, "DocumentSigned.pdf");
-        //     setFilebase64(data.signedFileBase64)
-        //     setResponseFile(file);
-        // } else {
-        //     console.error("Server error");
-        // }
+        const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            const file = base64ToFile(data.signedFileBase64, "DocumentSigned.pdf");
+            setFilebase64(data.signedFileBase64)
+            setResponseFile(file);
+            updateBookingRequest(data.signedFileBase64);
+        } else {
+            console.error("Server error");
+        }
+       
 
-
-        const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
-        setFilebase64(fileBase64)
-        setResponseFile(file);
+        // const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
+        // setFilebase64(fileBase64)
+        // setResponseFile(file);
+        // updateBookingRequest();
     };
 
     useEffect(() => {
@@ -133,18 +146,12 @@ export default function Page() {
                 const result = res.data;
                 console.log(res);
                 setBookingRequests(result);
-                // if (result.status == "SUCCESS") {
-                //     console.log(res);
-
-                //     setBookingRequests(result);
-                // }
             } catch (error) {
                 console.error('Error fetching booking requests:', error);
             }
 
         };
         fetchBookingRequests();
-
     }, []);
 
     useEffect(() => {
@@ -183,10 +190,15 @@ export default function Page() {
                             title: request.room.title,
                             status: request.status,
                             note: request.note,
-                            start_date: new Date(request.start_date).toLocaleDateString(),
+                            // start_date: new Date(request.start_date).toLocaleDateString(),
+                            start_date: request.start_date,
                             rental_duration: request.rental_duration,
                             message_from_renter: request.message_from_renter,
-                            id: request.id
+                            message_from_lessor: request.message_from_lessor,
+                            id: request.id,
+  renter_id: request.renter_id,
+  lessor_id: request.lessor_id,
+  room_id: request.room.id,
                         }}
                         headCells={headCells}
                         onButtonClick={(actionType) => {
@@ -288,11 +300,14 @@ export default function Page() {
                 >
                     <Typography variant="h6">Hợp đồng đã được ký thành công!</Typography>
                     <Box display="flex" justifyContent="flex-end" gap={2}>
-                        <Button onClick={openPdfInNewTab} variant="contained" color="primary">
+                        {/* <Button onClick={openPdfInNewTab} variant="contained" color="primary">
                             Mở File PDF
-                        </Button>
-                        <Button onClick={() => setSuccessModalOpen(false)} variant="outlined">
+                        </Button> */}
+                        {/* <Button onClick={() => setSuccessModalOpen(false)} variant="outlined">
                             Đóng
+                        </Button> */}
+                        <Button onClick={() => setSuccessModalOpen(false)} variant="contained" color="primary">
+                            Xác nhận
                         </Button>
                     </Box>
                 </Box>
@@ -300,115 +315,3 @@ export default function Page() {
         </Box>
     );
 };
-
-// export default function Page() {
-//     const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
-//     const [loadingPage, setLoadingPage] = useState(false);
-//     const [open, setOpen] = useState(true);
-//     const [loading, setLoading] = useState(false);
-//     const [responseFile, setResponseFile] = useState<File | null>(null);
-//     const [successModalOpen, setSuccessModalOpen] = useState(false);
-//     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-//     const handleOpen = () => setOpen(true);
-//     const handleClose = () => setOpen(false);
-//     const handleConfirm = async () => {
-//         setLoading(true);
-//         const fileBase64 = await getBase64FromPdf(selectedFile!);
-//         await handleSignDoc(fileBase64!);
-//         setLoading(false);
-//         setSuccessModalOpen(true);
-//     };
-//     const handleSignDoc = async (fileBase64: string) => {
-//         const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/json",
-//             },
-//             body: JSON.stringify(body),
-//         });
-//         const data = await response.json();
-//         console.log(data);
-//         const file = base64ToFile(data.signedFileBase64,"DocumentSigned")
-//         setResponseFile(file)
-
-//     const openPdfInNewTab = () => {
-//         if (responseFile) {
-//             const pdfUrl = `data:application/pdf;base64,${responseFile}`;
-//             window.open(pdfUrl, '_blank');
-//         }
-//     };
-
-//     return (
-//         <Box sx={{ display: 'flex', flexDirection: 'column', width: '70vw' }}>
-
-//             <CustomModal
-//                 open={open}
-//                 onClose={handleClose}
-//                 width="70%"
-//                 height="auto"
-//                 title="Ký hợp đồng"
-//                 type="confirm"
-//                 onConfirm={handleConfirm}
-//             >
-//                 <Box position="relative">
-//                     <Stack direction="row" spacing={2}>
-//                         <Typography>Chọn hợp đồng: </Typography>
-//                         <Box sx={{ position: 'relative' }}>
-//                             <PdfUploader onFileSelect={setSelectedFile} />
-//                         </Box>
-//                     </Stack>
-//                     {loading && (
-//                         <Box
-//                             sx={{
-//                                 position: 'absolute',
-//                                 top: 0,
-//                                 left: 0,
-//                                 right: 0,
-//                                 bottom: 0,
-//                                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
-//                                 zIndex: 10,
-//                                 display: 'flex',
-//                                 alignItems: 'center',
-//                                 justifyContent: 'center',
-//                             }}
-//                         >
-//                             <CircularProgress />
-//                         </Box>
-//                     )}
-//                 </Box>
-//             </CustomModal>
-
-//             <Modal
-//                 open={successModalOpen}
-//                 onClose={() => setSuccessModalOpen(false)}
-//             >
-//                 <Box
-//                     sx={{
-//                         position: 'absolute',
-//                         top: '50%',
-//                         left: '50%',
-//                         transform: 'translate(-50%, -50%)',
-//                         bgcolor: 'background.paper',
-//                         boxShadow: 24,
-//                         p: 4,
-//                         width: '80%',
-//                     }}
-//                 >
-//                     <Typography variant="h6">Hợp đồng đã được ký thành công!</Typography>
-//                     <iframe
-//                         src={`data:application/pdf;base64,${responseFile}`}
-//                         width="100%"
-//                         height="600px"
-//                         title="Signed Document"
-//                     />
-//                     <Button onClick={openPdfInNewTab} variant="contained" sx={{ mt: 2 }}>
-//                         Mở File PDF
-//                     </Button>
-//                     <Button onClick={() => setSuccessModalOpen(false)} variant="contained" sx={{ mt: 2 }}>
-//                         Đóng
-//                     </Button>
-//                 </Box>
-//             </Modal>
-//         </Box>
-//     );
-// };

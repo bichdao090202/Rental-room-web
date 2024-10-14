@@ -8,6 +8,8 @@ import PaymentButton from '@/payment';
 import { usersSelectors } from '@/common/store/user/users.selectors';
 import { useRouter } from 'next/navigation';
 
+import OpenPdfButton from '@/common/components/OpenPdfButton';
+
 export default function Page() {
     const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
     const user = usersSelectors.useUserInformation();
@@ -32,11 +34,12 @@ export default function Page() {
                         </Button>
                     )}
 
-                    {/* {true && (
-                        <PaymentButton>
-
-                        </PaymentButton>
-                    )} */}
+{row.note === "Waiting for renter to sign and pay" && row.message_from_lessor && (
+            <OpenPdfButton 
+                fileBase64={row.message_from_lessor} 
+                filename={"SignDocument.pdf"} 
+            /> 
+        )} 
 
 
 
@@ -83,10 +86,15 @@ export default function Page() {
                             title: request.room.title,
                             status: request.status,
                             note: request.note,
-                            start_date: new Date(request.start_date).toLocaleDateString(),
+                            // start_date: new Date(request.start_date).toLocaleDateString(),
+                            start_date: request.start_date,
                             rental_duration: request.rental_duration,
                             message_from_renter: request.message_from_renter,
+                            message_from_lessor: request.message_from_lessor,
                             id: request.id,
+  renter_id: request.renter_id,
+  lessor_id: request.lessor_id,
+  room_id: request.room.id,
                         }}
                         headCells={headCells}
                     />
