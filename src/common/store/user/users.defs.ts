@@ -1,11 +1,7 @@
-export interface Account {
-    username: string;
-    password: string;
-}
-
 export interface UserInformation {
-    userId: number;
-    username: string;
+    id: number;
+    full_name: string;
+    img_url: string
 }
 
 export interface UserState {

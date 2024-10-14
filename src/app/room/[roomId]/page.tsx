@@ -14,6 +14,10 @@ import {
   Snackbar,
   TextField,
   Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
 } from '@mui/material';
 import { formatCurrency } from '@/common/utils/helpers';
 import CustomFormControl from '@/common/components/FormControl';
@@ -21,6 +25,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { get, post } from '@/common/store/base.service';
 import axios from 'axios';
 import { Room } from '@/types';
+import { usersSelectors } from '@/common/store/user/users.selectors';
 
 interface Params {
   params: {
@@ -34,8 +39,6 @@ interface FormInputs {
   date: string;
 }
 
-
-
 export default function Page({ params }: Params) {
   const { roomId } = params;
   const { control, handleSubmit, formState: { errors } } = useForm<FormInputs>({
@@ -43,8 +46,8 @@ export default function Page({ params }: Params) {
   });
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     const body = {
-      renter_id: 2,
-      lessor_id: 1,
+      renter_id: user?.id,
+      lessor_id: room?.owner_id,
       room_id: Number(roomId),
       status: "PROCESSING",
       note: "Waiting for landlord approval",
@@ -52,9 +55,9 @@ export default function Page({ params }: Params) {
       start_date: new Date(data.date).toISOString(),
       rental_duration: Number(data.duration),
     }
-    
-    const response = await post(`booking-requests`,body)
-    if (response.status == "SUCCESS"){
+
+    const response = await post(`booking-requests`, body)
+    if (response.status == "SUCCESS") {
       alert("Đã gửi yêu cầu đặt phòng thành công")
       setOpenBookingModal(false)
     }
@@ -66,6 +69,7 @@ export default function Page({ params }: Params) {
   const [openTermsModal, setOpenTermsModal] = useState(false);
   const [snackOpen, setSnackOpen] = useState(false);
   const [room, setRoom] = useState<Room>();
+  const user = usersSelectors.useUserInformation();
 
   const handleOpenBookingModal = () => setOpenBookingModal(true);
   const handleCloseBookingModal = () => setOpenBookingModal(false);
@@ -84,12 +88,10 @@ export default function Page({ params }: Params) {
     }
   };
 
-
-
   useEffect(() => {
     const fetchBookingRequests = async () => {
       try {
-        const response = await get(`rooms/1`)
+        const response = await get(`rooms/${roomId}`)
         const result = response.data;
         console.log(result);
         setRoom(result);
@@ -103,7 +105,45 @@ export default function Page({ params }: Params) {
   return (
     room &&
     <Box className="w-full space-y-1">
-      <img src={room.images[0]} alt={room.title} className="w-full h-[400px] object-contain pb-5" />
+      {/* <img src={room.images[0]} alt={room.title} className="w-full h-[400px] object-contain pb-5" /> */}
+
+      <Box className="w-full flex flex-row">
+        <Box sx={{ width: '70%' }}>
+          <img
+            src={room.images[0]}
+            alt={room.title}
+            style={{ width: '100%', height: '400px', objectFit: 'contain' }}
+          />
+        </Box>
+
+        <Box sx={{ width: '30%' }}>
+          <Typography variant="h6" gutterBottom>Dịch vụ</Typography>
+          <Typography variant="subtitle1">Có phí:</Typography>
+          <List dense>
+            {room.services?.map((service) => (
+              service.price > 0 && (
+                <ListItem key={service.id}>
+                  <ListItemText
+                    primary={service.name}
+                    secondary={`Price: $${service.price}`}
+                  />
+                </ListItem>
+              )
+            ))}
+          </List>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="subtitle1">Miễn phí:</Typography>
+          <List dense>
+            {room.services?.map((service) => (
+              service.price > 0 && (
+                <ListItem key={service.id}>
+                  <ListItemText primary={service.name} />
+                </ListItem>
+              )
+            ))}
+          </List>
+        </Box>
+      </Box>
 
       <Box>
         <Typography variant="h5" line-height='5px'>{room.title}</Typography>

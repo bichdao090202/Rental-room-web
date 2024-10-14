@@ -1,31 +1,18 @@
 'use client'
 
+import { get } from "@/common/store/base.service";
 import { formatCurrency } from "@/common/utils/helpers";
 import { Box, Button, Card, CardActions, CardContent, CardMedia, Container, Grid, Modal, Typography } from "@mui/material";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Room } from '../types/index';
 
 interface Address {
   city: string;
   district: string;
   ward: string;
   detail: string;
-}
-
-interface Room {
-  id: number;
-  title: string;
-  type: number;
-  image: string;
-  address: Address;
-  utilities: number[];
-  price: number;
-  deposit: number;
-  gender: number;
-  roomSize: number;
-  ownerId: number;
-  description: string;
 }
 
 
@@ -71,21 +58,20 @@ export default function Home() {
       description: "Phòng trọ đầy đủ tiện nghi, gần trung tâm...",
     },
   ];
+  const [rooms, setRooms] = useState<Room[]>([])
 
   useEffect(() => {
-    const fetchBookingRequests = async () => {
+    const fetchRooms = async () => {
       try {
-        const response = await axios.get(`http://quocbaohuynh.live:3006/api/v1/booking-requests`);
-        
-        // const response = await axios.get(`http://ec2-13-236-165-0.ap-southeast-2.compute.amazonaws.com:3006/api/v1/booking-requests`);
-        // const result = res.data;
-        console.log(response);
-
+        const response = await get(`rooms?page_id=1&per_page=-1`)
+        const result = response.data;
+        console.log(result);
+        setRooms(result);
       } catch (error) {
-        console.error('Error fetching booking requests:', error);
+        console.error('Error fetching data:', error);
       }
     };
-    fetchBookingRequests();
+    fetchRooms();
   }, []);
   return (
     <Box
@@ -102,7 +88,7 @@ export default function Home() {
 
       <Container sx={{ py: 4, width: '100%' }}>
         <Grid container spacing={4}>
-          {mockRooms.map((room) => (
+          {rooms.map((room) => (
             <Grid item key={room.id} xs={12} sm={6} md={4} lg={3}>
               <Card sx={{ maxWidth: 500, cursor: 'pointer', }} onClick={() => { router.push(`/room/${room.id}`) }}>
 
@@ -113,7 +99,7 @@ export default function Home() {
                     height: 200,
                     objectFit: 'cover'
                   }}
-                  image={room.image}
+                  image={room.images[0]}
                   alt={room.title}
                 />
                 <CardContent>
@@ -129,9 +115,9 @@ export default function Home() {
                   <Typography gutterBottom variant="h6" component="div" color="orange">
                     {formatCurrency(room.price)}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  {/* <Typography variant="body2" color="text.secondary">
                     Địa chỉ: {`${room.address.detail}, ${room.address.ward}, ${room.address.district}, ${room.address.city}`}
-                  </Typography>
+                  </Typography> */}
 
                 </CardContent>
 

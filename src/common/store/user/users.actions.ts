@@ -1,15 +1,11 @@
-import { Account } from './users.defs';
+import { UserInformation } from './users.defs';
+import { userStates } from './users.states';
 import { useUserStore } from "./users.store";
-import { userService } from './users.service';
-import {userStates} from "@/common/store/users/users.states";
-
 const { setState } = useUserStore;
 
 export const userAction = {
-    async logIn(formAccount: Account) {
+    async logIn(userInformation: UserInformation) {
         try {
-            const userInformation = await userService.logIn(formAccount);
-            if (!userInformation) return false;
             setState(userStates.logIn(userInformation));
             return userInformation;
         } catch (error) {

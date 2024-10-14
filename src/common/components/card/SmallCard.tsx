@@ -30,7 +30,7 @@ const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonCl
                 />
             )}
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', pl: 2 }}>
-                <Typography variant="h5" sx={{ mb: 1, textAlign: 'left' }}>{dataSource.title}</Typography>
+                <Typography variant="h6" sx={{ mb: 1, textAlign: 'left' }}>{dataSource.title}</Typography>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, p: 0 }}>
                     {headCells.map((cell) => (
                         cell.render ? "" :

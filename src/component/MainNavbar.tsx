@@ -18,6 +18,8 @@ import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { stringAvatar } from '@/common/utils/helpers';
 import { Tooltip } from '@mui/material';
+import { usersSelectors } from '@/common/store/user/users.selectors';
+import { userAction } from '@/common/store/user/users.actions';
 
 interface MainNavbarProps {
   toggleSidebar?: () => void;
@@ -31,6 +33,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [openSubMenu, setOpenSubMenu] = React.useState<number | null>(null);
+  const user = usersSelectors.useUserInformation();
 
   const handleClickNavItem = (href: string) => {
     window.location.href = href;
@@ -237,7 +240,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
                     }
                   </IconButton>
                 </Tooltip> */}
-                <Tooltip title="User">
+                <Tooltip title={user?`User ${user.id}`:'none'}>
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     <Avatar alt="User Avatar" />
                   </IconButton>
@@ -258,14 +261,25 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
                 >
-                  {siteConfig.userMenu.map((item, index) => (
+                  {user && siteConfig.userMenu.map((item, index) => (
                     <MenuItem key={index} onClick={() => handleClickNavMenu(item.href)}>
                       <Typography textAlign="right">{item.label}</Typography>
                     </MenuItem>
                   ))}
-                  <MenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
-                    <Typography textAlign="center">Đăng xuất</Typography>
-                  </MenuItem>
+                  {
+                    user ?
+                      <MenuItem onClick={() => {
+                        userAction.signOut();
+                        router.push('/auth/login')
+                      }}>
+                        <Typography textAlign="center">Đăng xuất</Typography>
+                      </MenuItem> :
+                      <MenuItem onClick={() => {
+                        router.push('/auth/login')
+                      }}>
+                        <Typography textAlign="center">Đăng nhập</Typography>
+                      </MenuItem>
+                  }
                 </Menu>
               </>
             ) : <Button onClick={() => handleClickNavMenu('/login')} variant="contained" color="warning">Login</Button>}

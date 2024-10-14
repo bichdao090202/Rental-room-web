@@ -42,10 +42,17 @@ export interface Room {
   owner_id: number;
   maxPeople?: number | null;
   roomType?: number | null;
-  deposit?: number | null;
-  services?: string[] | null;
+  deposit: number;
+  services?: Service[] | null;
   images: string[];
   bookingRequests?: any[] | null;
+}
+
+export interface Service {
+  id: number,
+  name: string,
+  price: number,
+  description: string
 }
 
 export interface Contract {
@@ -100,7 +107,8 @@ export const contracts: Contract[] = [
       },
       description: "Căn nhà trọ tọa lạc tại vị trí đắc địa, gần trung tâm thành phố, thuận tiện di chuyển đến các khu vực lân cận. Phòng rộng khoảng 20m², được thiết kế hiện đại với cửa sổ lớn đón ánh sáng tự nhiên, giúp không gian luôn thoáng mát và sáng sủa. Nội thất bao gồm giường, tủ quần áo, bàn làm việc, và máy lạnh đã được lắp đặt sẵn, sẵn sàng để bạn dọn vào ở ngay.\nKhu vực an ninh, yên tĩnh, có bảo vệ 24/7 và hệ thống camera giám sát, đảm bảo an toàn tuyệt đối. Dịch vụ tiện ích đi kèm như Internet tốc độ cao, bãi đậu xe rộng rãi cho cả xe máy và xe đạp, cùng với khu vực bếp chung sạch sẽ và đầy đủ dụng cụ nấu nướng.\nGiá thuê chỉ từ 3.500.000 VNĐ/tháng, bao gồm nước sinh hoạt. Điện tính riêng theo mức tiêu thụ với giá hợp lý. Chủ nhà thân thiện, dễ chịu, hỗ trợ tận tình. Căn phòng lý tưởng này phù hợp cho các bạn sinh viên hoặc người đi làm đang tìm kiếm không gian sống thoải mái, tiện nghi.",
       owner_id: 1,
-      price: 3000000
+      price: 3000000,
+      deposit: 3000000
 
     },
     name: "Hợp đồng thuê phòng 1",
@@ -136,6 +144,8 @@ export const bookingRequests: BookingRequest[] = [
         provinceName: "TP. Hồ Chí Minh",
         wardName: ""
       },
+
+      deposit: 3000000,
       description: "Căn nhà trọ tọa lạc tại vị trí đắc địa, gần trung tâm thành phố, thuận tiện di chuyển đến các khu vực lân cận. Phòng rộng khoảng 20m², được thiết kế hiện đại với cửa sổ lớn đón ánh sáng tự nhiên, giúp không gian luôn thoáng mát và sáng sủa. Nội thất bao gồm giường, tủ quần áo, bàn làm việc, và máy lạnh đã được lắp đặt sẵn, sẵn sàng để bạn dọn vào ở ngay.\nKhu vực an ninh, yên tĩnh, có bảo vệ 24/7 và hệ thống camera giám sát, đảm bảo an toàn tuyệt đối. Dịch vụ tiện ích đi kèm như Internet tốc độ cao, bãi đậu xe rộng rãi cho cả xe máy và xe đạp, cùng với khu vực bếp chung sạch sẽ và đầy đủ dụng cụ nấu nướng.\nGiá thuê chỉ từ 3.500.000 VNĐ/tháng, bao gồm nước sinh hoạt. Điện tính riêng theo mức tiêu thụ với giá hợp lý. Chủ nhà thân thiện, dễ chịu, hỗ trợ tận tình. Căn phòng lý tưởng này phù hợp cho các bạn sinh viên hoặc người đi làm đang tìm kiếm không gian sống thoải mái, tiện nghi.",
       owner_id: 1,
       price: 3000000
@@ -181,6 +191,7 @@ const mockroom: Room = {
   price: 5000000,
   description: 'Phòng rộng rãi, thoáng mát, gần trung tâm.',
   owner_id: 1001,
+  deposit: 3000000,
   images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyWQtw2z4U9W_mIx80C5TvMWGYzut4mK-lXw&s'],
 }
 

@@ -1,4 +1,4 @@
-import { UserSelectors} from '.';
+import { UserSelectors } from './users.defs';
 import { useUserStore } from './users.store';
 
 export const usersSelectors: UserSelectors = {

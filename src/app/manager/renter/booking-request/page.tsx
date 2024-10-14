@@ -5,12 +5,16 @@ import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
 import { get } from '@/common/store/base.service';
 import { BookingRequest, Room } from '@/types';
 import PaymentButton from '@/payment';
+import { usersSelectors } from '@/common/store/user/users.selectors';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
     const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
+    const user = usersSelectors.useUserInformation();
+    const router = useRouter();
     const headCells: HeadCell[] = [
         { id: 'status', label: 'Trạng thái' },
-        { id: 'note', label: 'Ghi chú' },
+        // { id: 'note', label: 'Ghi chú' },
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê' },
         { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
@@ -19,24 +23,33 @@ export default function Page() {
             render: (row: BookingRequest) =>
             (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {(
+                    {row.note == "Waiting for renter to sign and pay" && (
                         <Button onClick={() => {
                             console.log(row.id);
-                            
-                        }} 
+                        }}
                             variant="contained" color="success" >
                             Thanh toán
                         </Button>
                     )}
 
-                    {true && (
+                    {/* {true && (
                         <PaymentButton>
 
                         </PaymentButton>
-                    )}
+                    )} */}
 
-                    <Button variant="contained" color="primary" >
-                        Chi tiết
+
+
+                    <Button variant="contained" color="primary" onClick={() => {
+                        router.push(`/room/${row.id}`)
+                    }}>
+                        Xem phòng
+                    </Button>
+
+                    <Button variant="contained" color="error" onClick={() => {
+
+                    }}>
+                        Hủy
                     </Button>
                 </Box>
             )
@@ -46,14 +59,13 @@ export default function Page() {
     useEffect(() => {
         const fetchBookingRequests = async () => {
             try {
-                const res = await get(`booking-requests`);
+                const res = await get(`booking-requests?renter_id=${user?.id}`);
                 const result = res.data;
                 console.log(res);
                 setBookingRequests(result);
             } catch (error) {
                 console.error('Error fetching booking requests:', error);
             }
-
         };
         fetchBookingRequests();
     }, []);

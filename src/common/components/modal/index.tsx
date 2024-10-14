@@ -42,7 +42,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
           p: 4,
         }}
       >
-        <Typography id="custom-modal-title" variant="h6" component="h2">
+        <Typography id="custom-modal-title" variant="h6" component="h2" sx={{fontWeight:'bold'}}>
           {title}
         </Typography>
         <Divider sx={{ my: 2 }} />

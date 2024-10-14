@@ -1,17 +1,19 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal } from '@mui/material';
+import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
 import CustomModal from '@/common/components/modal';
 import PdfUploader from '@/common/components/PdfUploader';
-import { get } from '@/common/store/base.service';
+import { get, put } from '@/common/store/base.service';
 import { BookingRequest } from '@/types';
-import { base64ToFile, getBase64FromPdf } from '@/common/utils/helpers';
+import { base64ToFile, formatDay, getBase64FromPdf } from '@/common/utils/helpers';
+import { usersSelectors } from '@/common/store/user/users.selectors';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
     const headCells: HeadCell[] = [
         { id: 'status', label: 'Trạng thái' },
-        { id: 'note', label: 'Ghi chú' },
+        // { id: 'note', label: 'Ghi chú' },
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê' },
         { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
@@ -20,8 +22,11 @@ export default function Page() {
             render: (row: BookingRequest) =>
             (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {(
-                        <Button onClick={handleOpen} variant="contained" color="success" >
+                    {row.note == "Waiting for landlord approval" && (
+                        <Button onClick={() => {
+                            handleOpen();
+                            setSelectedRequest(row);
+                        }} variant="contained" color="success" >
                             Đồng ý
                         </Button>
                     )}
@@ -32,8 +37,10 @@ export default function Page() {
                         </Button>
                     )}
 
-                    <Button variant="contained" color="primary" >
-                        Chi tiết
+                    <Button variant="contained" color="primary" onClick={() => {
+                        router.push(`/room/${row.id}`)
+                    }}>
+                        Xem phòng
                     </Button>
                 </Box>
             )
@@ -42,12 +49,16 @@ export default function Page() {
 
     const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
     const [loadingPage, setLoadingPage] = useState(false);
+    const router = useRouter();
 
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [responseFile, setResponseFile] = useState<File | null>(null);
     const [successModalOpen, setSuccessModalOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedRequest, setSelectedRequest] = useState<BookingRequest | null>(null);
+    const user = usersSelectors.useUserInformation();
+    const [filebase64, setFilebase64] = useState<string>();
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -57,7 +68,21 @@ export default function Page() {
         await handleSignDoc(fileBase64!);
         setLoading(false);
         setSuccessModalOpen(true);
+        updateBookingRequest();
     };
+
+    const updateBookingRequest = async () => {
+        if (!selectedRequest) return;
+
+        const updatedRequest = {
+            ...selectedRequest,
+            note: "Waiting for renter to sign and pay",
+            message_from_lessor: filebase64,
+        };
+
+        const res = put(`booking-requests/${selectedRequest.id}`, updatedRequest);
+        console.log(res);
+    }
 
     const handleSignDoc = async (fileBase64: string) => {
         const body = {
@@ -79,28 +104,32 @@ export default function Page() {
                 widthRectangle: 100
             }
         }
-        console.log(body);
-        const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        });
-        const data = await response.json();
+        // const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify(body),
+        // });
+        // const data = await response.json();
+        // if (response.ok) {
+        //     const file = base64ToFile(data.signedFileBase64, "DocumentSigned.pdf");
+        //     setFilebase64(data.signedFileBase64)
+        //     setResponseFile(file);
+        // } else {
+        //     console.error("Server error");
+        // }
 
-        if (response.ok) {
-            const file = base64ToFile(data.signedFileBase64, "DocumentSigned.pdf");
-            setResponseFile(file);
-        } else {
-            console.error("Server error");
-        }
+
+        const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
+        setFilebase64(fileBase64)
+        setResponseFile(file);
     };
 
     useEffect(() => {
         const fetchBookingRequests = async () => {
             try {
-                const res = await get(`booking-requests`);
+                const res = await get(`booking-requests?lessor_id=${user?.id}`);
                 const result = res.data;
                 console.log(res);
                 setBookingRequests(result);
@@ -116,7 +145,7 @@ export default function Page() {
         };
         fetchBookingRequests();
 
-    }, [bookingRequests]);
+    }, []);
 
     useEffect(() => {
         if (responseFile) {
@@ -157,6 +186,7 @@ export default function Page() {
                             start_date: new Date(request.start_date).toLocaleDateString(),
                             rental_duration: request.rental_duration,
                             message_from_renter: request.message_from_renter,
+                            id: request.id
                         }}
                         headCells={headCells}
                         onButtonClick={(actionType) => {
@@ -165,18 +195,56 @@ export default function Page() {
                     />
                 ))}
             </Box>
-            <CustomModal
+            {selectedRequest && <CustomModal
                 open={open}
                 onClose={handleClose}
                 width="70%"
                 height="auto"
-                title="Ký hợp đồng"
+                title="Chọn hợp đồng cho yêu cầu thuê"
                 type="confirm"
                 onConfirm={handleConfirm}
             >
                 <Box position="relative">
+                    <Typography sx={{ marginBottom: '10px' }}>
+                        Ngày bắt đầu:
+                        {new Date(selectedRequest.start_date).toLocaleDateString()}
+                    </Typography>
+                    <Typography>
+                        Thời gian thuê:
+                        {selectedRequest.rental_duration} tháng
+                    </Typography>
+
+
+                    <Box display="flex" alignItems="center">
+                        <Typography sx={{ marginRight: '10px' }}>Chọn nhà cung cấp chữ ký số:</Typography>
+                        <FormControl variant="outlined" className="w-1/5">
+                            <Select
+                                variant="outlined"
+                                id="sign"
+                                value={-1}
+                                // onChange={(event: any) => setRole(event.target.value)}
+                                sx={{
+                                    borderRadius: '8px',
+                                    marginBottom: '10px'
+                                }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        style: {
+                                            maxHeight: 400,
+                                        },
+                                    },
+                                }}
+                            >
+                                <MenuItem value={-1}>Viettel</MenuItem>
+
+                            </Select>
+                        </FormControl>
+                    </Box>
+
+
+
                     <Stack direction="row" spacing={2}>
-                        <Typography>Chọn hợp đồng: </Typography>
+                        <Typography sx={{ marginRight: '10px' }}>Chọn hợp đồng: </Typography>
                         <Box sx={{ position: 'relative' }}>
                             <PdfUploader onFileSelect={setSelectedFile} />
                         </Box>
@@ -200,7 +268,7 @@ export default function Page() {
                         </Box>
                     )}
                 </Box>
-            </CustomModal>
+            </CustomModal>}
 
             <Modal
                 open={successModalOpen}
@@ -219,7 +287,7 @@ export default function Page() {
                     }}
                 >
                     <Typography variant="h6">Hợp đồng đã được ký thành công!</Typography>
-                    <Box display="flex" justifyContent="flex-end" gap={2}>    
+                    <Box display="flex" justifyContent="flex-end" gap={2}>
                         <Button onClick={openPdfInNewTab} variant="contained" color="primary">
                             Mở File PDF
                         </Button>
