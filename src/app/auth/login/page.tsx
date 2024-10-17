@@ -8,20 +8,13 @@ import { Box, Button, FormControl, IconButton, InputAdornment, InputLabel, Outli
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { ValidateTextField } from "@/component/ValidateTextField";
 import SocialLogin from "@/component/SocialLogin";
-import { getSession, signIn } from "next-auth/react";
+import { getSession, signIn, useSession } from "next-auth/react";
 import { get, post } from "@/common/store/base.service";
-import { userAction } from "@/common/store/user/users.actions";
-import { usersSelectors } from "@/common/store/user/users.selectors";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  // const { status } = useSession();
   const [showPassword, setShowPassword] = React.useState(false);
   const [formValue, setFormValue] = useState({ phone: '0905015627', password: '1231' });
-  // const user = usersSelectors.useUserInformation();
-
-
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (event: any) => {
@@ -30,32 +23,19 @@ export default function LoginPage() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // const res = await signIn("credentials", {
-    //   username: formValue.phone,
-    //   password: formValue.password,
-    //   callbackUrl: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
-    //   redirect: false
-    // });
-    // if (res?.ok) {
-    //   router.push("/");
-    // }
-    const data = {
+    const result = await signIn('credentials', {
+      redirect: false, 
       phone: formValue.phone,
       password: formValue.password,
+      callbackUrl: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
+    });
+    if (result?.ok) {
+      router.push('/');
+    } else {
+      console.error('Login failed:', result?.error);
     }
-    const res = await post('auth/login',data);
-    userAction.logIn(res.data.user_info)    
-    router.push('/')
   }
 
-  useEffect(() => {
-    const test = async () => {
-      const userSession = await getSession()
-      console.log(userSession);
-    }
-
-    test();
-  }, [])
   return (
     <>
       <Box component="div" sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>

@@ -60,15 +60,18 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import Sidebar from '@/component/Sidebar';
 import MainNavbar from '@/component/MainNavbar';
+import { getSession, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import LoadingBox from '@/common/components/LoadingBox';
 
 const items = [
     {
         title: 'Thuê',
         key: '/renter',
-        items: [ //src\app\manager\landlord\booking-request
+        items: [
             {
                 title: 'Yêu cầu thuê',
                 key: '/manager/renter/booking-request',
@@ -100,50 +103,42 @@ const items = [
 ];
 
 export default function Template({ children }: { children: React.ReactNode }) {
-    const [collapseMenu, setCollapseMenu] = useState(false);
-    const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
-
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const storedExpandedMenus = localStorage.getItem('expandedMenus');
-        if (storedExpandedMenus) {
-            setExpandedMenus(JSON.parse(storedExpandedMenus));
-        }
+        const checkSession = async () => {
+            const session = await getSession();
+            if (!session || !session.user) {
+                router.push('/auth/login');
+            } else {
+                setIsLoading(false);
+            }
+        };
+        checkSession();
     }, []);
 
-    const handleMenuToggle = (key: string) => {
-        setExpandedMenus((prevExpanded) => {
-            const newExpanded = prevExpanded.includes(key)
-                ? prevExpanded.filter((item) => item !== key)
-                : [...prevExpanded, key];
-
-            // Lưu trạng thái mới vào localStorage
-            localStorage.setItem('expandedMenus', JSON.stringify(newExpanded));
-            return newExpanded;
-        });
-    };
-    const toggleSidebar = () => {
-        setCollapseMenu((prev) => !prev);
-    };
+    if (isLoading) {
+        return (
+            <LoadingBox />
+        );
+    }
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column'}}>
-            <Box><MainNavbar toggleSidebar={toggleSidebar} /></Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box><MainNavbar /></Box>
             <Box sx={{ display: 'flex' }} >
                 <Box sx={{ display: 'flex' }}>
                     <Sidebar
                         items={items}
-                        // collapseMenu={collapseMenu}
-                        // expandedMenus={expandedMenus}
-                        // onMenuToggle={handleMenuToggle}
                     />
                     <Box
                         component="main"
                         sx={{
                             flexGrow: 1,
                             p: 3,
-                            width: { sm: `calc(100% - ${collapseMenu ? '0px' : '250px'})` },
-                            marginLeft: { sm: collapseMenu ? '0px' : '250px' },
+                            width: { sm: `calc(100% - '250px'})` },
+                            marginLeft: { sm: '250px' },
                             transition: 'margin 0.2s ease-in-out',
                         }}
                     >

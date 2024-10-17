@@ -34,6 +34,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [openSubMenu, setOpenSubMenu] = React.useState<number | null>(null);
   const user = usersSelectors.useUserInformation();
+  const { data: session } = useSession();
 
   const handleClickNavItem = (href: string) => {
     window.location.href = href;
@@ -240,7 +241,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
                     }
                   </IconButton>
                 </Tooltip> */}
-                <Tooltip title={user?`User ${user.id}`:'none'}>
+                <Tooltip title={session ? `User ${session.user!.id}` : 'none'}>
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     <Avatar alt="User Avatar" />
                   </IconButton>
@@ -261,17 +262,14 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
                 >
-                  {user && siteConfig.userMenu.map((item, index) => (
+                  {session && siteConfig.userMenu.map((item, index) => (
                     <MenuItem key={index} onClick={() => handleClickNavMenu(item.href)}>
                       <Typography textAlign="right">{item.label}</Typography>
                     </MenuItem>
                   ))}
                   {
-                    user ?
-                      <MenuItem onClick={() => {
-                        userAction.signOut();
-                        router.push('/auth/login')
-                      }}>
+                    session ?
+                      <MenuItem onClick={() => signOut({ callbackUrl: '/auth/login' })}>
                         <Typography textAlign="center">Đăng xuất</Typography>
                       </MenuItem> :
                       <MenuItem onClick={() => {
@@ -282,9 +280,8 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
                   }
                 </Menu>
               </>
-            ) : <Button onClick={() => handleClickNavMenu('/login')} variant="contained" color="warning">Login</Button>}
+            ) : ""}
           </Box>
-
         </Toolbar>
       </Container>
     </AppBar>

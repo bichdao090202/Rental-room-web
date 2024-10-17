@@ -18,6 +18,7 @@ interface Address {
 
 export default function Home() {
   const router = useRouter();
+
   const mockRooms = [
     {
       id: 1,
@@ -85,7 +86,6 @@ export default function Home() {
 
       }}
     >
-
       <Container sx={{ py: 4, width: '100%' }}>
         <Grid container spacing={4}>
           {rooms.map((room) => (

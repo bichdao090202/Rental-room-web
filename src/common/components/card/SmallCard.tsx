@@ -1,6 +1,7 @@
 'use client'
 import React from 'react';
 import { Card, CardHeader, CardContent, CardActions, Typography, Box, Avatar, Button } from '@mui/material';
+import { formatDay } from '@/common/utils/helpers';
 
 export interface HeadCell {
     id: string;
@@ -17,6 +18,21 @@ interface SmallCardProps {
     headCells: HeadCell[];
     onButtonClick?: (actionType: string) => void;
 }
+
+const formatValue = (value:any) => {
+    if (typeof value === 'number') {
+      return value.toString();
+    } else if (value instanceof Date) {
+      return formatDay( value);
+    } else if (typeof value === 'string') {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return formatDay(date);
+      }
+      return value;
+    }
+    return String(value);
+  };
 
 const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonClick }) => {
     return (
@@ -35,15 +51,18 @@ const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonCl
                     {headCells.map((cell) => (
                         cell.render ? "" :
                             <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                <Typography variant="body2" sx={{ mr: 1 }}>{cell.label}: {dataSource[cell.id]}</Typography>
+                                <Typography variant="body2" sx={{ mr: 1 }}>
+                                    {/* {cell.label}: {isNaN(Date.parse(dataSource[cell.id])) ? dataSource[cell.id] : new Date(dataSource[cell.id]).toLocaleDateString()} */}
+                                    {cell.label}:  {formatValue(dataSource[cell.id])}
+                            
+                                </Typography>
                                 <Typography variant="body2">
-
                                 </Typography>
                             </Box>
                     ))}
                 </CardContent>
             </Box>
-            <CardActions sx={{ display: 'flex', flexDirection: 'column', width: '20%', justifyContent: 'center', alignItems: 'center', height:'100%' }}>
+            <CardActions sx={{ display: 'flex', flexDirection: 'column', width: '20%', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                 {headCells.map((cell) => (
                     <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'center' }}>
                         {cell.render ? cell.render(dataSource) : ""}

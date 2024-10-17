@@ -25,7 +25,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { get, post } from '@/common/store/base.service';
 import axios from 'axios';
 import { Room } from '@/types';
-import { usersSelectors } from '@/common/store/user/users.selectors';
+import { getSession, useSession } from 'next-auth/react';
 
 interface Params {
   params: {
@@ -42,11 +42,12 @@ interface FormInputs {
 export default function Page({ params }: Params) {
   const { roomId } = params;
   const { control, handleSubmit, formState: { errors } } = useForm<FormInputs>({
-    mode: 'onSubmit'  // Hoặc 'onChange' 
+    mode: 'onSubmit'
   });
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+    const session = await getSession();
     const body = {
-      renter_id: user?.id,
+      renter_id: session?.user?.id,
       lessor_id: room?.owner_id,
       room_id: Number(roomId),
       status: "PROCESSING",
@@ -69,7 +70,6 @@ export default function Page({ params }: Params) {
   const [openTermsModal, setOpenTermsModal] = useState(false);
   const [snackOpen, setSnackOpen] = useState(false);
   const [room, setRoom] = useState<Room>();
-  const user = usersSelectors.useUserInformation();
 
   const handleOpenBookingModal = () => setOpenBookingModal(true);
   const handleCloseBookingModal = () => setOpenBookingModal(false);
@@ -185,6 +185,9 @@ export default function Page({ params }: Params) {
         </Typography>
         <Typography>
           {`${room.address.provinceName}, ${room.address.districtName}, ${room.address.wardName}, ${room.address.detail}`}
+        </Typography>
+        <Typography >
+          Tiền cọc: {formatCurrency(room.deposit)}
         </Typography>
         <Typography>
           Kích thước phòng: {room.acreage} m²

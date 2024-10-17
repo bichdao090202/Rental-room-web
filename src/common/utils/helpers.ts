@@ -80,7 +80,7 @@ export const getBase64FromPdf = async (file: File): Promise<string | null> => {
     reader.onloadend = () => {
       const arrayBuffer = reader.result as ArrayBuffer; 
       const byteNumbers = new Uint8Array(arrayBuffer);
-      const byteString = byteNumbers.reduce((data, byte) => data + String.fromCharCode(byte), ''); // Tạo chuỗi từ Uint8Array
+      const byteString = byteNumbers.reduce((data, byte) => data + String.fromCharCode(byte), ''); 
       const base64String = btoa(byteString); 
       resolve(base64String);
     };
@@ -100,14 +100,3 @@ export const base64ToFile = (base64: string, filename: string): File => {
   const blob = new Blob([byteNumbers], { type: 'application/pdf' }); 
   return new File([blob], filename, { type: 'application/pdf' });
 };
-
-// export const base64ToFile = (base64: string, filename: string): File => {
-//   const byteCharacters = atob(base64); 
-//   const byteNumbers = new Array(byteCharacters.length);
-//   for (let i = 0; i < byteCharacters.length; i++) {
-//     byteNumbers[i] = byteCharacters.charCodeAt(i); 
-//   }
-//   const byteArray = new Uint8Array(byteNumbers); 
-//   const blob = new Blob([byteArray], { type: 'application/pdf' });
-//   return new File([blob], filename, { type: 'application/pdf' });
-// };

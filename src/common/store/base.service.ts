@@ -35,37 +35,21 @@ export const get = async (url: string, opts?: BaseOpts): Promise<any> => {
 export const post = async (
   url: string,
   data?: any,
-  opts?: any,
+  domain: boolean = true,
 ): Promise<any> => {
-  const defaultOpts = { auth: true, cache: 'default' };
-  if (opts) {
-    opts = { ...defaultOpts, ...opts };
-  }
-
-  const response = await fetch(
-    `${opts?.onRouteHandler ? '' : process.env.NEXT_PUBLIC_API_URL}/${url}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      domain ?  `${process.env.NEXT_PUBLIC_API_URL}/${url}` : `${url}` ,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: data ? JSON.stringify(data) : undefined,
       },
-      body: data ? JSON.stringify(data) : undefined,
-      cache: opts?.cache,
-    },
-  );
+    );
 
-  const res = await response.json();
-  return res;
-//const response = await axios.get(`http://ec2-13-236-165-0.ap-southeast-2.compute.amazonaws.com:3006/api/v1/booking-requests`);
-  // if (!response.ok) {
-  //   throw Error('Server error!');
-  // }
-
-  // try {
-  //   return await response.json();
-  // } catch (parseError) {
-  //   return {};
-  // }
+    const res = await response.json();
+    return res;
 };
 
 export const remove = async (
@@ -94,9 +78,8 @@ export const remove = async (
   }
 
   try {
-    return await response.json(); // Try to parse as JSON if content exists
+    return await response.json(); 
   } catch (parseError) {
-    // If parsing fails (not valid JSON), handle gracefully
     console.error('JSON Parsing Error:', parseError);
     throw new Error('Invalid JSON response from the server');
   }
