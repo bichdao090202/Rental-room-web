@@ -71,7 +71,14 @@ export default function Page({ params }: Params) {
   const [snackOpen, setSnackOpen] = useState(false);
   const [room, setRoom] = useState<Room>();
 
-  const handleOpenBookingModal = () => setOpenBookingModal(true);
+  const handleOpenBookingModal = async () => {
+    const session = await getSession();
+    if (session?.user?.id == room?.owner_id){
+      alert("Không thể thuê phòng của chính mình")
+      return
+    }
+    setOpenBookingModal(true)
+  };
   const handleCloseBookingModal = () => setOpenBookingModal(false);
   const handleOpenTermsModal = () => setOpenTermsModal(true);
   const handleCloseTermsModal = () => setOpenTermsModal(false);
@@ -124,16 +131,16 @@ export default function Page({ params }: Params) {
               service.price > 0 && (
                 <ListItem key={service.id}>
                   <ListItemText
-                    primary={service.name}
-                    secondary={`Price: $${service.price}`}
+                    primary={`${service.name} (${service.description}): ${formatCurrency(service.price)}`}
+                    // secondary={`${service.name}: ${service.price}`}
                   />
                 </ListItem>
               )
             ))}
           </List>
           <Divider sx={{ my: 2 }} />
-          <Typography variant="subtitle1">Miễn phí:</Typography>
-          <List dense>
+          {/* <Typography variant="subtitle1">Miễn phí:</Typography> */}
+          {/* <List dense>
             {room.services?.map((service) => (
               service.price > 0 && (
                 <ListItem key={service.id}>
@@ -141,7 +148,7 @@ export default function Page({ params }: Params) {
                 </ListItem>
               )
             ))}
-          </List>
+          </List> */}
         </Box>
       </Box>
 
@@ -184,7 +191,7 @@ export default function Page({ params }: Params) {
           Địa chỉ:
         </Typography>
         <Typography>
-          {`${room.address.provinceName}, ${room.address.districtName}, ${room.address.wardName}, ${room.address.detail}`}
+          {`${room.address.detail}, ${room.address.province_name}, ${room.address.district_name}, ${room.address.ward_name}`}
         </Typography>
         <Typography >
           Tiền cọc: {formatCurrency(room.deposit)}

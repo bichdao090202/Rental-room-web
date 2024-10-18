@@ -119,26 +119,26 @@ export default function BookingRequestList() {
             }
         }
         console.log('Đã chuẩn bị xong dữ liệu');
-        const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        });
-        console.log('Đã gửi yêu cầu ký');
-        const data = await response.json();
-        console.log('Đã xác nhận');
-        if (response.ok) {
-            const file = base64ToFile(data.signedFileBase64, "DocumentSigned.pdf");
-            updateBookingRequest(data.signedFileBase64);
-        } else {
-            console.error("Server error");
-        }
-        // const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
+        // const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify(body),
+        // });
+        // console.log('Đã gửi yêu cầu ký');
+        // const data = await response.json();
+        // console.log('Đã xác nhận');
+        // if (response.ok) {
+        //     const file = base64ToFile(data.signedFileBase64, "DocumentSigned.pdf");
+        //     updateBookingRequest(data.signedFileBase64);
+        // } else {
+        //     console.error("Server error");
+        // }
+        const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
         // setFilebase64(fileBase64)
         // setResponseFile(file);
-        // updateBookingRequest();
+        updateBookingRequest(fileBase64);
     };
 
     const fetchBookingRequests = async () => {

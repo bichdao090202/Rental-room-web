@@ -14,7 +14,7 @@ import { get, post } from "@/common/store/base.service";
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
-  const [formValue, setFormValue] = useState({ phone: '0905015627', password: '1231' });
+  const [formValue, setFormValue] = useState({ phone: '0905015623', password: '1231' });
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (event: any) => {

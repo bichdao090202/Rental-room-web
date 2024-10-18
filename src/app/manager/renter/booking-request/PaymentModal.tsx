@@ -7,7 +7,8 @@ import CustomFormControl from "@/common/components/FormControl";
 import FormControlDisable from "@/common/components/DisableTextfield";
 
 export const orderInit = {
-    userId: 0,
+    bookingRequestId: 0,
+    user: {},
     OrderDetails: [],
     deposit: 0,
     priceMonth: 0,
@@ -15,11 +16,12 @@ export const orderInit = {
 
 interface PaymentModalProps {
     onClose: () => void;
-    order: Order;
+    order?: Order;
 }
 
 export interface Order {
-    userId: number;
+    bookingRequestId: number;
+    user:any;
     OrderDetails?: OrderDetail[];
     deposit?: number;
     priceMonth: number;
@@ -34,6 +36,8 @@ interface OrderDetail {
 export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) => {
     let total = 0;
     let orderDescription = '';
+
+    if(!order) return null;
     if (order.deposit) {
         total = order.deposit + order.priceMonth;
         orderDescription = 'Thanh toan tien coc va tien thue phong thang 1';
@@ -71,8 +75,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                         Thông tin khách hàng:
                     </Typography>
                     <Typography >
-                        ID: {order?.userId}
+                        {/* ID: {order?.userId} */}
+                        ID: {order?.user?.id}
                     </Typography>
+                    {/* <Typography >
+                        Họ tên: {order?.user?.full_name}
+                    </Typography> */}
 
                     <Divider sx={{ my: 2 }} />
                     <Typography component="h2" sx={{ fontWeight: 'bold' }} >
@@ -105,7 +113,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                     <Button variant="contained" sx={{ background: '#1976d2' }} onClick={() => {
                         const PaymentInfo = {
                             amount: total / 100,
-                            userId: order.userId,
+                            // userId: order.userId,
+                            userId: order.bookingRequestId,
                             orderDescription: orderDescription,
                         }
                         handlePayment(PaymentInfo);
