@@ -69,11 +69,13 @@ export default function BookingRequests() {
                         Xem phòng
                     </Button>
 
-                    <Button variant="contained" color="error" onClick={() => {
+                    {row.status!='Success' && (
+                        <Button variant="contained" color="error" onClick={() => {
 
-                    }}>
-                        Hủy
-                    </Button>
+                        }}>
+                            Hủy
+                        </Button>
+                    )}
                 </Box>
             )
         }

@@ -100,3 +100,11 @@ export const base64ToFile = (base64: string, filename: string): File => {
   const blob = new Blob([byteNumbers], { type: 'application/pdf' }); 
   return new File([blob], filename, { type: 'application/pdf' });
 };
+
+export const formatDatePost = (dateString: string): string => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date string");
+  }
+  return date.toISOString();
+}

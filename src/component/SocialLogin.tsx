@@ -2,7 +2,6 @@
 
 import { signIn } from "next-auth/react"
 import { Box, Button } from "@mui/material";
-import GithubIcon from "./icons/GithubIcon";
 import GoogleIcon from "./icons/GoogleIcon";
 
 export default function SocialLogin() {

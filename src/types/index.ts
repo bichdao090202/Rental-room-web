@@ -55,22 +55,37 @@ export interface Service {
   description: string
 }
 
+interface User {
+  id: number;
+  full_name: string;
+  email: string;
+}
+
 export interface Contract {
   id: number;
-  renterId: number;
-  landlordId: number;
+  renter: User;
+  lessor: User;
   room?: Room;
   name: string;
   content: string;
   dateComplete?: Date;
   datePay?: Date;
+  "monthly_price": number,
+  "canceled_by": User,
+  "date_rent": Date,
+  "date_pay": Date,
+  "pay_mode": number,
+  "payment": number,
+  "is_enable": boolean,
   startRentDate?: Date;
   rentalDuration?: number;
-  status: string;
+  status: number;
   price?: number;
   deposit?: number;
   chargeableServices?: ChargeableService[];
   pdfPath: string;
+  invoices: any;
+
 }
 
 export interface BookingRequest {

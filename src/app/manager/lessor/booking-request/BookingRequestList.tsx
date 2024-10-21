@@ -1,4 +1,4 @@
-'use client';
+    'use client';
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
@@ -34,7 +34,7 @@ export default function BookingRequestList() {
                         </Button>
                     )}
 
-                    {true && (
+                    {row.status!='Success' && (
                         <Button variant="contained" color="error" >
                             Từ chối
                         </Button>

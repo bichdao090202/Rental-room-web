@@ -6,13 +6,24 @@ import { get } from '@/common/store/base.service';
 import { BookingRequest, Room } from '@/types';
 import { useRouter } from 'next/navigation';
 
+import OpenPdfButton from "@/common/components/OpenPdfButton";
 import { getSession, useSession } from 'next-auth/react';
 import { PaymentModal } from '../../renter/booking-request/PaymentModal';
+import {ModalCancelContract} from "@/app/manager/lessor/contract/ModalCancelContract";
+import {ModalHandleCancelContract} from "@/app/manager/lessor/contract/ModalHandleCancelContract";
+import {ModalConfirmCancelContract} from "@/app/manager/lessor/contract/ModalConfirmCancelContract";
+import {ModalOrder} from "@/app/manager/renter/contract/ModalOrder";
 
 export default function ContractList() {
     const [bookingRequests, setBookingRequests] = useState<any[]>([]);
     const router = useRouter();
     const [paymentModal, setPaymentModal] = useState(false);
+
+    const [cancelModal,setCancelModal] = useState(false);
+    const [modalHandleCancel,setlHandleCancel] = useState(false);
+    const [confirmModal,setConfirmModal] = useState(false);
+    const [orderModal,setOrderModal] = useState(false);
+    const [contract, setContract] = useState(0);
     const { data: session } = useSession();
     console.log(session);
 
@@ -34,6 +45,22 @@ export default function ContractList() {
             return 'Unknown status';
         }
       }
+
+    const handleCancelModal = () => {
+        setCancelModal(false);
+    };
+
+    const handleModalHandle = () => {
+        setlHandleCancel(false);
+    };
+
+    const handleModalConfirm = () => {
+        setConfirmModal(false);
+    };
+
+    const handleOrderModal = () => {
+        setOrderModal(false);
+    };
     
 
     const headCells: HeadCell[] = [
@@ -54,26 +81,68 @@ export default function ContractList() {
                             
                             console.log(row.id);
                         }}>Thanh toán</Button>
-                        // <VNPayButton
-                        //     userId="12345"
-                        //     amount={100000}
-                        //     orderDescription="Thanh toán đơn hàng #12345"
-                        // />
                     )}
 
-                    
 
+<OpenPdfButton
+                        fileBase64={row.message_from_lessor}
+                        filename={"SignDocument.pdf"}
+                    />
+
+                    <Button variant="contained" color="info" onClick={() => {
+                        setContract(row.id);
+                        setOrderModal(true);
+                    }}>
+                        Xem hóa đơn
+                    </Button>
+
+                    
+{/* 
                     <Button variant="contained" color="primary" onClick={() => {
                         router.push(`/room/${row.room_id}`)
                     }}>
                         Xem phòng
-                    </Button>
+                    </Button> */}
 
-                    <Button variant="contained" color="error" onClick={() => {
+                    {
+                        row.canceled_by==null &&
+                        <Button variant="contained" color="primary" onClick={() => {
+                            setCancelModal(true);
+                            setContract(row.id);
+                        }}>
+                            Hủy hợp đồng
+                        </Button>
+                    }
 
-                    }}>
-                        Hủy 
-                    </Button>
+                    {
+                        row.canceled_by==session?.user.id && row.pay_mode==5 &&
+                        <Button variant="outlined" color="primary" onClick={() => {
+                            setlHandleCancel(true);
+                            setContract(row.id);
+                        }}>
+                            <i>Chờ phản hồi</i>
+                        </Button>
+                    }
+
+                    {
+                        row.canceled_by!=session?.user.id && row.pay_mode==5 &&
+                        <Button variant="contained" color="primary" onClick={() => {
+                            setlHandleCancel(true);
+                            setContract(row.id);
+                        }}>
+                            Xem yêu cầu hủy
+                        </Button>
+                    }
+
+                    {
+                        row.canceled_by!=null && row.canceled_by==session?.user.id && row.pay_mode==6 &&
+                        <Button variant="contained" color="primary" onClick={() => {
+                            setConfirmModal(true);
+                            setContract(row.id);
+                            fetchBookingRequests();
+                        }}> {`Xem phản hồi`}
+                        </Button>
+                    }
                 </Box>
             )
         }
@@ -81,7 +150,7 @@ export default function ContractList() {
 
     const fetchBookingRequests = async () => {
         const session = await getSession();
-        try {
+        try { //?renter_id=${session?.user?.id}
             const res = await get(`contracts?renter_id=${session?.user?.id}`);
             const result = res.data;
             console.log(res);
@@ -123,12 +192,18 @@ export default function ContractList() {
                             room_id: request.room.id,
                             monthly_price: request.monthly_price,
                             deposit: request.room.deposit,
+                            canceled_by: request.canceled_by?.id,
+                            pay_mode: request.pay_mode
                         }}
                         headCells={headCells}
                     />
                 ))}
             </Box>
             {paymentModal && <PaymentModal onClose={handlePaymentModal} />}
+            {cancelModal && <ModalCancelContract onClose={handleCancelModal} contractId={contract} />}
+            {modalHandleCancel && <ModalHandleCancelContract onClose={handleModalHandle} contractId={contract} />}
+            {confirmModal && <ModalConfirmCancelContract onClose={handleModalConfirm} contractId={contract} />}
+            {orderModal && <ModalOrder onClose={handleOrderModal} contractId={contract} />}
         </Box>
     );
 };

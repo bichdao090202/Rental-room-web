@@ -1,20 +1,3 @@
-// import { Box, Typography } from "@mui/material";
-
-// export default async function Page({ searchParams }: { searchParams: any }) {
-//     const response = await fetch(`/api/payment/vnpay/verify-url?${new URLSearchParams(searchParams)}`);
-//     const result = await response.json(); 
-
-//     return (
-//         <Box>
-//             <Typography variant="h4">Kết quả thanh toán</Typography>
-//             <Typography variant="body1">Mã giao dịch: {result.vnp_TransactionNo}</Typography>
-//             <Typography variant="body1">Số tiền: {result.vnp_Amount}</Typography>
-//             <Typography variant="body1">Trạng thái: {result.vnp_TransactionStatus}</Typography>
-//             <Typography variant="body1">Ngày thanh toán: {result.vnp_PayDate}</Typography>
-//             <Typography variant="body1">Thông tin đơn hàng: {result.vnp_OrderInfo}</Typography>
-//         </Box>
-//     );
-// }
 'use client'
 import { Badge, Box, Button, Card, CardContent, createStyles, Divider, Grid, List, ListItem, ListItemText, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Theme, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -40,14 +23,12 @@ interface PaymentResult {
   vnp_TxnRef: string;
 }
 
-
-
 export default function Page() {
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
+  // const router = useRouter();
   useEffect(() => {
     const verifyPayment = async () => {
       try {
@@ -56,11 +37,11 @@ export default function Page() {
           throw new Error('Verification failed');
         }
         const data = await response.json();
-        console.log(data);
-        if (data.isSuccess && data.isVerified && data.vnp_TransactionStatus === '00')
+        if (data.isSuccess && data.isVerified && data.vnp_TransactionStatus === '00'){
+          setPaymentResult(data);
           createContract(data);
-        
-        setPaymentResult(data);
+        } else setPaymentResult(data);
+
       } catch (err) {
         setError('Có lỗi xảy ra khi xác thực thanh toán');
       } finally {
@@ -69,7 +50,7 @@ export default function Page() {
     };
 
     verifyPayment();
-  }, [searchParams]);
+  }, []);
 
   if (loading) {
     return (
@@ -111,7 +92,7 @@ export default function Page() {
             <Typography>Số tiền:</Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography>{formatCurrency(parseInt(paymentResult.vnp_Amount) / 100)}</Typography>
+            <Typography>{formatCurrency(parseInt(paymentResult.vnp_Amount) )}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography>Ngân hàng:</Typography>
@@ -136,11 +117,11 @@ export default function Page() {
         </Grid>
       </Paper>
 
-      <Button variant="contained" color="primary" onClick={() => {
-        router.push(`/manager/renter/booking-request`)
-      }}>
-        Quay lại trang quản lý
-      </Button>
+      {/*<Button variant="contained" color="primary" onClick={() => {*/}
+      {/*  router.push(`/manager/renter/booking-request`)*/}
+      {/*}}>*/}
+      {/*  Quay lại trang quản lý*/}
+      {/*</Button>*/}
 
       {/* <Box sx={{ maxWidth: 450, mx: 'auto', my: 3, boxShadow: 1, p: 2, bgcolor: '#e0f7fa', borderRadius: 3 }}>
         <Typography variant="h6" color="textPrimary" gutterBottom>

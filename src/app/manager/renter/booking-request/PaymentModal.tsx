@@ -1,10 +1,11 @@
 import VNPayButton from "@/common/components/Payment/PaymentButton";
-import { Box, Button, Divider, Modal, Typography } from "@mui/material";
+import {Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography} from "@mui/material";
 import { PaymentInfo } from '../../../api/payment/vnpay/create-payment-url/route';
 import { handlePayment } from "@/common/components/Payment/handlePayment";
 import { formatCurrency } from "@/common/utils/helpers";
 import CustomFormControl from "@/common/components/FormControl";
 import FormControlDisable from "@/common/components/DisableTextfield";
+import React from "react";
 
 export const orderInit = {
     bookingRequestId: 0,
@@ -78,6 +79,31 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                         {/* ID: {order?.userId} */}
                         ID: {order?.user?.id}
                     </Typography>
+                    <Box display="flex" alignItems="center">
+                        <Typography sx={{ marginRight: '10px' }}>Chọn nhà cung cấp chữ ký số:</Typography>
+                        <FormControl variant="outlined" className="w-1/5">
+                            <Select
+                                variant="outlined"
+                                id="sign"
+                                value={-1}
+                                // onChange={(event: any) => setRole(event.target.value)}
+                                sx={{
+                                    borderRadius: '8px',
+                                    marginBottom: '10px'
+                                }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        style: {
+                                            maxHeight: 400,
+                                        },
+                                    },
+                                }}
+                            >
+                                <MenuItem value={-1}>Viettel</MenuItem>
+
+                            </Select>
+                        </FormControl>
+                    </Box>
                     {/* <Typography >
                         Họ tên: {order?.user?.full_name}
                     </Typography> */}

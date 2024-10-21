@@ -1,6 +1,6 @@
-'use client'
 import { get, post, put } from '@/common/store/base.service';
 import { BookingRequest } from '@/types';
+import {formatDatePost} from "@/common/utils/helpers";
 export const createContract = async (data: any) => {
     const bookingRequestId = data.vnp_TxnRef.split('-')[1];
     const responseGetBookingRequest = await get(`booking-requests`);
@@ -29,10 +29,16 @@ export const createContract = async (data: any) => {
     const responseCreateContract = await post(`contracts`, bodyContract);
     console.log(responseCreateContract);
 
-    
-    
-    
+    const bodyOrder={
+        contract_id: responseCreateContract.data.id,
+        // contract_id: 8,
+        amount: data.vnp_Amount,
+        start_date: formatDatePost( data.vnp_PayDate),
+    }
 
+
+    const order = await post(`invoices`, bodyOrder);
+    console.log(order);
     
     
 }

@@ -8,13 +8,20 @@ import { useRouter } from 'next/navigation';
 
 import { getSession, useSession } from 'next-auth/react';
 import { PaymentModal } from '../../renter/booking-request/PaymentModal';
+import OpenPdfButton from "@/common/components/OpenPdfButton";
+import { ModalCancelContract } from './ModalCancelContract';
+import {ModalHandleCancelContract} from "@/app/manager/lessor/contract/ModalHandleCancelContract";
+import {ModalConfirmCancelContract} from "@/app/manager/lessor/contract/ModalConfirmCancelContract";
 
 export default function ContractList() {
     const [bookingRequests, setBookingRequests] = useState<any[]>([]);
     const router = useRouter();
     const [paymentModal, setPaymentModal] = useState(false);
+    const [cancelModal,setCancelModal] = useState(false);
+    const [modalHandleCancel,setlHandleCancel] = useState(false);
+    const [confirmModal,setConfirmModal] = useState(false);
+    const [contract, setContract] = useState(0);
     const { data: session } = useSession();
-    console.log(session);
 
     function getStatusText(status:number) {
         switch (status) {
@@ -61,19 +68,63 @@ export default function ContractList() {
                         // />
                     )}
 
+                    <OpenPdfButton
+                        fileBase64={row.message_from_lessor}
+                        filename={"SignDocument.pdf"}
+                    />
+
+                    <Button variant="contained" color="info" onClick={() => {
+
+                    }}>
+                        Xem hóa đơn
+                    </Button>
+
                     
 
-                    <Button variant="contained" color="primary" onClick={() => {
+                    {/* <Button variant="contained" color="primary" onClick={() => {
                         router.push(`/room/${row.room_id}`)
                     }}>
                         Xem phòng
-                    </Button>
+                    </Button> */}
 
-                    <Button variant="contained" color="error" onClick={() => {
+                    {
+                        row.canceled_by==null &&
+                        <Button variant="contained" color="primary" onClick={ () => {
+                            setContract(row.id);
+                            setCancelModal(true);
+                        }}>
+                            Hủy hợp đồng
+                        </Button>
+                    }
 
-                    }}>
-                        Hủy
-                    </Button>
+                    {
+                        row.canceled_by==session?.user.id && row.pay_mode==5 &&
+                        <Button variant="outlined" color="primary" onClick={() => {
+                            setlHandleCancel(true);
+                            setContract(row.id);
+                        }}>
+                            <i>Chờ phản hồi</i>
+                        </Button>
+                    }
+
+                    {
+                        row.canceled_by!=session?.user.id && row.pay_mode==5 &&
+                        <Button variant="contained" color="primary" onClick={async () => {
+                            setContract(row.id);
+                            setlHandleCancel(true);
+                        }}>
+                            Xem yêu cầu hủy
+                        </Button>
+                    }
+
+                    {
+                        row.canceled_by!=null && row.canceled_by==session?.user.id && row.pay_mode==6 &&
+                        <Button variant="contained" color="primary" onClick={() => {
+                            setConfirmModal(true);
+                            setContract(row.id);
+                        }}> {`Xem phản hồi`}
+                        </Button>
+                    }
                 </Box>
             )
         }
@@ -95,6 +146,19 @@ export default function ContractList() {
     const handlePaymentModal = () => {
         setPaymentModal(false);
     };
+
+    const handleCancelModal = () => {
+        setCancelModal(false);
+    };
+
+    const handleModalHandle = () => {
+        setlHandleCancel(false);
+    };
+
+    const handleModalConfirm = () => {
+        setConfirmModal(false);
+    };
+
 
     useEffect(() => {
         fetchBookingRequests();
@@ -123,12 +187,19 @@ export default function ContractList() {
                             room_id: request.room.id,
                             monthly_price: request.monthly_price,
                             deposit: request.room.deposit,
+                            payment_mode: request.payment_mode,
+                            canceled_by: request.canceled_by?.id,
+                            pay_mode: request.pay_mode
                         }}
                         headCells={headCells}
                     />
+                    
                 ))}
             </Box>
             {paymentModal && <PaymentModal onClose={handlePaymentModal} />}
+            {cancelModal && <ModalCancelContract onClose={handleCancelModal} contractId={contract} />}
+            {modalHandleCancel && <ModalHandleCancelContract onClose={handleModalHandle} contractId={contract} />}
+            {confirmModal && <ModalConfirmCancelContract onClose={handleModalConfirm} contractId={contract} />}
         </Box>
     );
 };
