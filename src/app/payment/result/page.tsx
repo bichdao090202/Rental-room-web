@@ -37,7 +37,7 @@ export default function Page() {
           throw new Error('Verification failed');
         }
         const data = await response.json();
-        if (data.isSuccess && data.isVerified && data.vnp_TransactionStatus === '00'){
+        if (data.isSuccess && data.isVerified && data.vnp_TransactionStatus === '00'){ //vnp_ResponseCode
           setPaymentResult(data);
           createContract(data);
         } else setPaymentResult(data);

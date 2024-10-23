@@ -1,29 +1,88 @@
-    'use client';
+'use client';
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
+import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal, FormControl, Select, MenuItem } from '@mui/material';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
-import CustomModal from '@/common/components/modal';
-import PdfUploader from '@/common/components/PdfUploader';
 import { get, put } from '@/common/store/base.service';
-import { BookingRequest } from '@/types';
-import { base64ToFile, formatDay, getBase64FromPdf } from '@/common/utils/helpers';
-import { usersSelectors } from '@/common/store/user/users.selectors';
+import { BookingRequest, Room } from '@/types';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+
 import OpenPdfButton from '@/common/components/OpenPdfButton';
 import { getSession, useSession } from 'next-auth/react';
+import { Order, orderInit, PaymentModal } from '@/component/BookingRequestsList/PaymentModal';
+import CustomModal from '@/common/components/modal';
+import { base64ToFile, getBase64FromPdf } from '@/common/utils/helpers';
+import PdfUploader from '@/common/components/PdfUploader';
+import LoadingBox from '@/common/components/LoadingBox';
 
-export default function BookingRequestList() {
+export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor' }) {
+    const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
+    const router = useRouter();
+    const [paymentModal, setPaymentModal] = useState(false);
+    const [order, setOrder] = useState<Order>(orderInit);
+    const { data: session } = useSession();
+
+    //for lessor
+    const [open, setOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState<BookingRequest | null>(null);
+    const [loadingPage, setLoadingPage] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [successModalOpen, setSuccessModalOpen] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
     const headCells: HeadCell[] = [
         { id: 'status', label: 'Trạng thái' },
         // { id: 'note', label: 'Ghi chú' },
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
         { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
+        { id: 'price', label: 'Giá' },
         {
             id: 'action', label: "Action",
             render: (row) =>
-            (
+            (type === 'renter' ?
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {row.note == "Waiting for renter to sign and pay" && (
+                        <Button variant="contained" color="success" onClick={() => {
+                            setPaymentModal(true);
+                            setOrder({
+                                bookingRequestId: row.id,
+                                user: session?.user,
+                                priceMonth: row.price,
+                                deposit: row.deposit,
+                                OrderDetails: [
+                                    {
+                                        title: row.title,
+                                        value: row.price,
+                                        quantity: row.rental_duration,
+                                    }
+                                ]
+                            });
+                            console.log(row.id);
+                        }}>Thanh toán</Button>
+                    )}
+
+                    {row.note === "Waiting for renter to sign and pay" && row.message_from_lessor && (
+                        <OpenPdfButton
+                            fileBase64={row.message_from_lessor}
+                            filename={"SignDocument.pdf"}
+                        />
+                    )}
+
+                    <Button variant="contained" color="primary" onClick={() => {
+                        router.push(`/room/${row.room_id}`)
+                    }}>
+                        Xem phòng
+                    </Button>
+
+                    {row.status != 'Success' && (
+                        <Button variant="contained" color="error" onClick={() => {
+
+                        }}>
+                            Hủy
+                        </Button>
+                    )}
+                </Box>
+                :
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {row.note == "Waiting for landlord approval" && (
                         <Button onClick={() => {
@@ -34,7 +93,7 @@ export default function BookingRequestList() {
                         </Button>
                     )}
 
-                    {row.status!='Success' && (
+                    {row.status != 'Success' && (
                         <Button variant="contained" color="error" >
                             Từ chối
                         </Button>
@@ -54,21 +113,29 @@ export default function BookingRequestList() {
                     </Button>
                 </Box>
             )
-        }
+        },
+
     ]
-    const { data: session } = useSession();
-    const user = session?.user;
-    const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
-    const [loadingPage, setLoadingPage] = useState(false);
-    const router = useRouter();
 
-    const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [successModalOpen, setSuccessModalOpen] = useState(false);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [selectedRequest, setSelectedRequest] = useState<BookingRequest | null>(null);
-    
+    const fetchBookingRequests = async () => {
+        const session = await getSession();
+        try {
+            const path = type === 'renter' ? `booking-requests?renter_id=${session?.user?.id}` : `booking-requests?lessor_id=${session?.user?.id}`;
+            const res = await get(path);
+            const result = res.data;
+            console.log(res);
+            const sortedResult = result.sort((a: any, b: any) => b.id - a.id);
+            setBookingRequests(sortedResult);
+        } catch (error) {
+            console.error('Error fetching booking requests:', error);
+        }
+    };
 
+    const handlePaymentModal = () => {
+        setPaymentModal(false);
+    };
+
+    //for lessor    
     const handleClose = () => setOpen(false);
     const handleConfirm = async () => {
         setLoading(true);
@@ -136,54 +203,22 @@ export default function BookingRequestList() {
         //     console.error("Server error");
         // }
         const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
-        // setFilebase64(fileBase64)
-        // setResponseFile(file);
         updateBookingRequest(fileBase64);
     };
-
-    const fetchBookingRequests = async () => {
-        try {
-            const res = await get(`booking-requests?lessor_id=${session!.user?.id}`);
-            const result = res.data;
-            setBookingRequests(result);
-        } catch (error) {
-            console.error('Error fetching booking requests:', error);
-        }
-
-    };
-
-    useEffect(() => {
-        fetchBookingRequests();
-    }, []);
-
-    // useEffect(() => {
-    //     if (responseFile) {
-    //         const fileUrl = URL.createObjectURL(responseFile);
-    //         return () => URL.revokeObjectURL(fileUrl);
-    //     }
-    // }, [responseFile]);
 
     if (loadingPage) {
         return <Typography variant="h6">Loading...</Typography>;
     }
 
-    // const openPdfInNewTab = () => {
-    //     if (responseFile) {
-    //         const fileUrl = URL.createObjectURL(responseFile);
-    //         const newTab = window.open(fileUrl, '_blank');
-    //         if (newTab) {
-    //             newTab.focus();
-    //         }
-    //         setTimeout(() => URL.revokeObjectURL(fileUrl), 100);
-    //     }
-    // };
+    useEffect(() => {
+        fetchBookingRequests();
+    }, []);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', width: '70vw' }}>
             <Typography variant="h4" gutterBottom >
                 Danh sách yêu cầu thuê
             </Typography>
-
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {bookingRequests.map((request) => (
                     <SmallCard key={request.id}
@@ -200,13 +235,16 @@ export default function BookingRequestList() {
                             renter_id: request.renter_id,
                             lessor_id: request.lessor_id,
                             room_id: request.room.id,
-                            
+                            price: request.room.price,
+                            deposit: request.room.deposit,
                         }}
                         headCells={headCells}
                     />
                 ))}
             </Box>
-            {selectedRequest && <CustomModal
+            {paymentModal && <PaymentModal onClose={handlePaymentModal} order={order} />}
+
+            {selectedRequest && <CustomModal    //for lessor
                 open={open}
                 onClose={handleClose}
                 width="70%"
@@ -247,12 +285,9 @@ export default function BookingRequestList() {
                                 }}
                             >
                                 <MenuItem value={-1}>Viettel</MenuItem>
-
                             </Select>
                         </FormControl>
                     </Box>
-
-
 
                     <Stack direction="row" spacing={2}>
                         <Typography sx={{ marginRight: '10px' }}>Chọn hợp đồng: </Typography>
@@ -260,60 +295,45 @@ export default function BookingRequestList() {
                             <PdfUploader onFileSelect={setSelectedFile} />
                         </Box>
                     </Stack>
-                    {loading && (
-                        <Box
-                            sx={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                                zIndex: 10,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            <CircularProgress />
-                        </Box>
-                    )}
+                    {loading && <LoadingBox />}
                 </Box>
             </CustomModal>}
 
-            <Modal
-                open={successModalOpen}
-                onClose={() => setSuccessModalOpen(false)}
-            >
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        bgcolor: 'background.paper',
-                        boxShadow: 24,
-                        p: 4,
-                        width: '80%',
-                    }}
+            {successModalOpen &&
+                <Modal
+                    open={successModalOpen}
+                    onClose={() => setSuccessModalOpen(false)}
                 >
-                    <Typography variant="h6">Hợp đồng đã được ký thành công!</Typography>
-                    <Box display="flex" justifyContent="flex-end" gap={2}>
-                        {/* <Button onClick={openPdfInNewTab} variant="contained" color="primary">
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            bgcolor: 'background.paper',
+                            boxShadow: 24,
+                            p: 4,
+                            width: '80%',
+                        }}
+                    >
+                        <Typography variant="h6">Hợp đồng đã được ký thành công!</Typography>
+                        <Box display="flex" justifyContent="flex-end" gap={2}>
+                            {/* <Button onClick={openPdfInNewTab} variant="contained" color="primary">
                             Mở File PDF
                         </Button> */}
-                        {/* <Button onClick={() => setSuccessModalOpen(false)} variant="outlined">
+                            {/* <Button onClick={() => setSuccessModalOpen(false)} variant="outlined">
                             Đóng
                         </Button> */}
-                        <Button onClick={() => {
-                            setSuccessModalOpen(false)
-                            fetchBookingRequests();
-                        }} variant="contained" color="primary">
-                            Xác nhận
-                        </Button>
+                            <Button onClick={() => {
+                                setSuccessModalOpen(false)
+                                fetchBookingRequests();
+                            }} variant="contained" color="primary">
+                                Xác nhận
+                            </Button>
+                        </Box>
                     </Box>
-                </Box>
-            </Modal>
+                </Modal>}
+
         </Box>
     );
 };

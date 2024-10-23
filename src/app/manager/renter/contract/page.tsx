@@ -1,14 +1,7 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Box } from '@mui/material';
-import ContractList from './ContractList';
-
+import ContractsList from '@/component/ContractsList';
 
 export default function Page() {
-    
     return (
-        <>
-        <ContractList />
-        </>
+        <ContractsList type="renter" />
     )
 }

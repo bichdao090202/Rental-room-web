@@ -1,10 +1,7 @@
-import { Container } from "@mui/material";
-import BookingRequestList from "./BookingRequestList";
+import BookingRequestsList from "@/component/BookingRequestsList";
 
 export default function Page() {
     return (
-        <Container>
-            <BookingRequestList/>
-        </Container>
+        <BookingRequestsList type="lessor" />
     )
 };

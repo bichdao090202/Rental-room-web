@@ -32,7 +32,6 @@ export default function Page() {
     <Container sx={{ display: 'flex', flexDirection: 'column', width: '70vw' }}>
       <Typography variant="h4">Danh sách yêu cầu thuê</Typography>
 
-      
       <SmallCard dataSource={dataSource} headCells={headCells} onButtonClick={handleButtonClick} />
     </Container>
   );

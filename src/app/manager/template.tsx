@@ -7,41 +7,6 @@
 // import Sidebar from "@/component/sidebar";
 // import ManagerTemplate from './template';
 
-// const items = [
-//     {
-//         title: 'Thuê',
-//         key: '/rent',
-//         items: [
-//             {
-//                 title: 'Yêu cầu thuê',
-//                 key: '/manager/renter',
-//             },
-//             {
-//                 title: 'Hợp đồng',
-//                 key: '/manager/renter',
-//             },
-//         ],
-//     },
-//     {
-//         title: 'Cho thuê',
-//         key: '/lease',
-//         items: [
-//             {
-//                 title: 'Yêu cầu thuê',
-//                 key: '/manager/landlord',
-//             },
-//             {
-//                 title: 'Hợp đồng',
-//                 key: '/manager/landlord',
-//             },
-//             {
-//                 title: 'Phòng trọ',
-//                 key: '/manager/landlord',
-//             },
-//         ],
-//     },
-// ];
-
 // export default function Template({ children }: { children: React.ReactNode }) {
 //     const router = useRouter();
 //     return (

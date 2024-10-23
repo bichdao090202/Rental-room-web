@@ -21,8 +21,13 @@ export async function POST(req: NextRequest) {
       testMode: true,
     });
 
+    // vnp_BankCode=NCB&
+    // vnp_OrderInfo=Thanh+toan+tien+coc+va+tien+thue+phong+thang+1
+    // vnp_PayDate=20241023140102&
+    // vnp_TransactionNo=14628152&
+    // vnp_TxnRef=1729666820356-7
     const buildPaymentData = {
-      vnp_Amount: paymentInfo.amount * 100, 
+      vnp_Amount: paymentInfo.amount * 100,
       vnp_OrderInfo: paymentInfo.orderDescription,
       vnp_TxnRef: paymentInfo.orderId,
       vnp_IpAddr: paymentInfo.clientIp,

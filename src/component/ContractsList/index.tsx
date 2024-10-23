@@ -3,45 +3,42 @@ import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal } from '@mui/material';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
 import { get } from '@/common/store/base.service';
-import { BookingRequest, Room } from '@/types';
 import { useRouter } from 'next/navigation';
-
 import { getSession, useSession } from 'next-auth/react';
-import { PaymentModal } from '../../renter/booking-request/PaymentModal';
 import OpenPdfButton from "@/common/components/OpenPdfButton";
+import { PaymentModal } from '../BookingRequestsList/PaymentModal';
 import { ModalCancelContract } from './ModalCancelContract';
-import {ModalHandleCancelContract} from "@/app/manager/lessor/contract/ModalHandleCancelContract";
-import {ModalConfirmCancelContract} from "@/app/manager/lessor/contract/ModalConfirmCancelContract";
+import { ModalOrder } from './ModalOrder';
 
-export default function ContractList() {
+export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     const [bookingRequests, setBookingRequests] = useState<any[]>([]);
     const router = useRouter();
     const [paymentModal, setPaymentModal] = useState(false);
-    const [cancelModal,setCancelModal] = useState(false);
-    const [modalHandleCancel,setlHandleCancel] = useState(false);
-    const [confirmModal,setConfirmModal] = useState(false);
+    const [cancelModal, setCancelModal] = useState(false);
+    const [typeModal, setTypeModal] = useState<'cancel' | 'handle' | 'confirm'>('cancel');
     const [contract, setContract] = useState(0);
     const { data: session } = useSession();
 
-    function getStatusText(status:number) {
+    const [orderModal, setOrderModal] = useState(false);
+
+    function getStatusText(status: number) {
         switch (status) {
-          case 1:
-            return 'Processing';
-          case 2:
-            return 'Active';
-          case 3:
-            return 'Finished';
-          case 4:
-            return 'Failure';
-          case 5:
-            return 'One-side cancel';
-          case 6:
-            return 'Agreed cancel';
-          default:
-            return 'Unknown status';
+            case 1:
+                return 'Processing';
+            case 2:
+                return 'Active';
+            case 3:
+                return 'Finished';
+            case 4:
+                return 'Failure';
+            case 5:
+                return 'One-side cancel';
+            case 6:
+                return 'Agreed cancel';
+            default:
+                return 'Unknown status';
         }
-      }
-    
+    }
 
     const headCells: HeadCell[] = [
         { id: 'status', label: 'Trạng thái' },
@@ -49,7 +46,7 @@ export default function ContractList() {
         { id: 'date_rent', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
         // { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
-        {id: 'monthly_price', label: 'Giá mỗi tháng'},
+        { id: 'monthly_price', label: 'Giá mỗi tháng' },
         {
             id: 'action', label: "Action",
             render: (row) =>
@@ -58,28 +55,22 @@ export default function ContractList() {
                     {row.note == "Waiting for renter to sign and pay" && (
                         <Button variant="contained" color="success" onClick={() => {
                             setPaymentModal(true);
-                            
                             console.log(row.id);
                         }}>Thanh toán</Button>
-                        // <VNPayButton
-                        //     userId="12345"
-                        //     amount={100000}
-                        //     orderDescription="Thanh toán đơn hàng #12345"
-                        // />
                     )}
 
-                    <OpenPdfButton
-                        fileBase64={row.message_from_lessor}
-                        filename={"SignDocument.pdf"}
-                    />
+                    <Button variant="contained" color="primary" onClick={() => {
+                        window.open(row.file_path, '_blank');
+                    }}>
+                        Xem pdf
+                    </Button>
 
                     <Button variant="contained" color="info" onClick={() => {
-
+                        setContract(row.id);
+                        setOrderModal(true);
                     }}>
                         Xem hóa đơn
                     </Button>
-
-                    
 
                     {/* <Button variant="contained" color="primary" onClick={() => {
                         router.push(`/room/${row.room_id}`)
@@ -88,9 +79,10 @@ export default function ContractList() {
                     </Button> */}
 
                     {
-                        row.canceled_by==null &&
-                        <Button variant="contained" color="primary" onClick={ () => {
+                        row.canceled_by == null &&
+                        <Button variant="contained" color="primary" onClick={() => {
                             setContract(row.id);
+                            setTypeModal('cancel');
                             setCancelModal(true);
                         }}>
                             Hủy hợp đồng
@@ -98,30 +90,33 @@ export default function ContractList() {
                     }
 
                     {
-                        row.canceled_by==session?.user.id && row.pay_mode==5 &&
+                        row.canceled_by == session?.user.id && row.pay_mode == 5 &&
                         <Button variant="outlined" color="primary" onClick={() => {
-                            setlHandleCancel(true);
                             setContract(row.id);
+                            setTypeModal('cancel');
+                            setCancelModal(true);
                         }}>
                             <i>Chờ phản hồi</i>
                         </Button>
                     }
 
                     {
-                        row.canceled_by!=session?.user.id && row.pay_mode==5 &&
+                        row.canceled_by != session?.user.id && row.pay_mode == 5 &&
                         <Button variant="contained" color="primary" onClick={async () => {
                             setContract(row.id);
-                            setlHandleCancel(true);
+                            setTypeModal('handle');
+                            setCancelModal(true);
                         }}>
                             Xem yêu cầu hủy
                         </Button>
                     }
 
                     {
-                        row.canceled_by!=null && row.canceled_by==session?.user.id && row.pay_mode==6 &&
+                        row.canceled_by != null && row.canceled_by == session?.user.id && row.pay_mode == 6 &&
                         <Button variant="contained" color="primary" onClick={() => {
-                            setConfirmModal(true);
                             setContract(row.id);
+                            setTypeModal('confirm');
+                            setCancelModal(true);
                         }}> {`Xem phản hồi`}
                         </Button>
                     }
@@ -133,11 +128,13 @@ export default function ContractList() {
     const fetchBookingRequests = async () => {
         const session = await getSession();
         try {
-            const res = await get(`contracts?lessor_id=${session?.user?.id}`);
+            const path = type === 'renter' ? `contracts?renter_id=${session?.user?.id}` : `contracts?lessor_id=${session?.user?.id}`;
+            const res = await get(path);
             const result = res.data;
             console.log(res);
             if (!result) return;
-            setBookingRequests(result);
+            const sortedResult = result.sort((a: any, b: any) => b.id - a.id);
+            setBookingRequests(sortedResult);
         } catch (error) {
             console.error('Error fetching booking requests:', error);
         }
@@ -151,14 +148,9 @@ export default function ContractList() {
         setCancelModal(false);
     };
 
-    const handleModalHandle = () => {
-        setlHandleCancel(false);
+    const handleOrderModal = () => {
+        setOrderModal(false);
     };
-
-    const handleModalConfirm = () => {
-        setConfirmModal(false);
-    };
-
 
     useEffect(() => {
         fetchBookingRequests();
@@ -189,17 +181,17 @@ export default function ContractList() {
                             deposit: request.room.deposit,
                             payment_mode: request.payment_mode,
                             canceled_by: request.canceled_by?.id,
-                            pay_mode: request.pay_mode
+                            pay_mode: request.pay_mode,
+                            file_path: request.file_path
                         }}
                         headCells={headCells}
                     />
-                    
+
                 ))}
             </Box>
             {paymentModal && <PaymentModal onClose={handlePaymentModal} />}
-            {cancelModal && <ModalCancelContract onClose={handleCancelModal} contractId={contract} />}
-            {modalHandleCancel && <ModalHandleCancelContract onClose={handleModalHandle} contractId={contract} />}
-            {confirmModal && <ModalConfirmCancelContract onClose={handleModalConfirm} contractId={contract} />}
+            {cancelModal && <ModalCancelContract onClose={handleCancelModal} contractId={contract} type={typeModal} />}
+            {orderModal && <ModalOrder onClose={handleOrderModal} contractId={contract} />}
         </Box>
     );
 };

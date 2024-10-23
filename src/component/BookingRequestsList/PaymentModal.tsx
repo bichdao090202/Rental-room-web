@@ -1,6 +1,6 @@
 import VNPayButton from "@/common/components/Payment/PaymentButton";
 import {Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography} from "@mui/material";
-import { PaymentInfo } from '../../../api/payment/vnpay/create-payment-url/route';
+import { PaymentInfo } from '../../app/api/payment/vnpay/create-payment-url/route';
 import { handlePayment } from "@/common/components/Payment/handlePayment";
 import { formatCurrency } from "@/common/utils/helpers";
 import CustomFormControl from "@/common/components/FormControl";

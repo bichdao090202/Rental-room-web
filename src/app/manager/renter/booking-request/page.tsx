@@ -1,10 +1,7 @@
-import { Box } from "@mui/material";
-import BookingRequests from "./BookingRequests";
+import BookingRequestsList from "@/component/BookingRequestsList";
 
 export default function Page() {
     return (
-        <Box>
-            <BookingRequests />
-        </Box>
+        <BookingRequestsList type="renter" />
     );
 };

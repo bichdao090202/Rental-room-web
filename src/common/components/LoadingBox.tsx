@@ -4,11 +4,16 @@ export default function LoadingBox() {
     return (
         <Box
             sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                zIndex: 10,
                 display: 'flex',
-                justifyContent: 'center',
                 alignItems: 'center',
-                minHeight: '100vh',
-                minWidth: '100vw',
+                justifyContent: 'center',
             }}
         >
             <CircularProgress />

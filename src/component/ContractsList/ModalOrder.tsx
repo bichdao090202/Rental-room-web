@@ -71,7 +71,8 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId })
                         Mã hợp đồng(ID): {contractId}
                     </Typography>
 
-                    <Box sx={{mt:'20px',mb:'20px'}}></Box>
+                    
+                    <Box sx={{mt:'10px'}}></Box>
 
                     <Typography component="h2" sx={{ fontWeight: 'bold' }} >
                         Danh sách hóa đơn:
@@ -98,6 +99,11 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId })
                             </Grid>
                         ))}
                     </Grid>
+
+                    <Box sx={{mt:'10px'}}></Box>
+
+                    <Button variant="contained">Tạo hóa đơn</Button>
+
 
                     {/*<Typography  >*/}
                     {/*    Tiền cọc: {contract.room?.deposit}*/}
