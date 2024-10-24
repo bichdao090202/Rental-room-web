@@ -7,6 +7,7 @@ import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 import { Room } from '../types/index';
+import { ModalOrder } from "@/component/ContractsList/ModalOrder";
 
 interface Address {
   city: string;
@@ -60,6 +61,13 @@ export default function Home() {
     },
   ];
   const [rooms, setRooms] = useState<Room[]>([])
+
+  
+  // const [orderModal, setOrderModal] = useState(true);
+
+//   const handleOrderModal = () => {
+//     setOrderModal(false);
+// };
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -125,6 +133,8 @@ export default function Home() {
             </Grid>
           ))}
         </Grid>
+
+        {/* <ModalOrder onClose={handleOrderModal} contractId={21} /> */}
       </Container>
     </Box>
   );

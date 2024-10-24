@@ -70,13 +70,13 @@ export interface Contract {
   content: string;
   dateComplete?: Date;
   datePay?: Date;
-  "monthly_price": number,
-  "canceled_by": User,
-  "date_rent": Date,
-  "date_pay": Date,
-  "pay_mode": number,
-  "payment": number,
-  "is_enable": boolean,
+  monthly_price: number,
+  canceled_by: User,
+  date_rent: Date,
+  date_pay: Date,
+  pay_mode: number,
+  payment: number,
+  is_enable: boolean,
   startRentDate?: Date;
   rentalDuration?: number;
   status: number;

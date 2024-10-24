@@ -102,8 +102,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
                         sx={{
                             flexGrow: 1,
                             p: 3,
-                            width: { sm: `calc(100% - '250px'})` },
-                            marginLeft: { sm: '250px' },
+                            width: 'calc(100vw - 250px)',
+                            marginLeft: { sm: '200px' },
                             transition: 'margin 0.2s ease-in-out',
                         }}
                     >

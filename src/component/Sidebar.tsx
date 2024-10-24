@@ -203,7 +203,7 @@ const Sidebar: React.FC<ISidebar> = ({ items }) => {
       sx={(theme: Theme) => ({
         '& .MuiDrawer-paper': {
           boxSizing: 'border-box',
-          width: 250,
+          width: 200,
           backgroundColor: theme.palette.background.default,
           color: theme.palette.text.primary,
           marginTop: '70px', 

@@ -157,7 +157,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     }, []);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', width: '70vw' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%'  }}>
             <Typography variant="h4" gutterBottom >
                 Danh sách hợp đồng
             </Typography>
