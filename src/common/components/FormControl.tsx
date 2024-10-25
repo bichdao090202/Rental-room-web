@@ -170,6 +170,8 @@ interface CustomFormControlProps {
     type?: 'date' | 'number' | 'text' | 'password' | 'image';
     rules?: object;
     [key: string]: any;
+    disable?: boolean;
+    defaultValue?: any;
 }
 
 const CustomFormControl: React.FC<CustomFormControlProps> = ({
@@ -181,6 +183,8 @@ const CustomFormControl: React.FC<CustomFormControlProps> = ({
     placeholder,
     type = 'text',
     rules,
+    disable = false,
+    defaultValue='',
     ...rest
 }) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -236,6 +240,7 @@ const CustomFormControl: React.FC<CustomFormControlProps> = ({
                 error={!!error}
                 helperText={error?.message}
                 fullWidth
+                disabled={disable}
                 InputLabelProps={{
                     shrink: true,
                 }}
@@ -258,6 +263,7 @@ const CustomFormControl: React.FC<CustomFormControlProps> = ({
                         </InputAdornment>
                     ),
                 }}
+                
                 {...rest}
             />
         );
@@ -270,6 +276,7 @@ const CustomFormControl: React.FC<CustomFormControlProps> = ({
                 name={name}
                 control={control}
                 rules={rules}
+                defaultValue={defaultValue}
                 render={({ field }) => renderInput(field)}
             />
             {type === 'image' && error && (

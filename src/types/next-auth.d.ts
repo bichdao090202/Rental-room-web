@@ -30,5 +30,6 @@ declare module "next-auth" {
         user: User & DefaultSession["user"];
         expires: string;
         error?: string;
+        accessToken: string;
     }
 }

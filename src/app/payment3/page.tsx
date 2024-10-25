@@ -3,7 +3,6 @@ import { post } from "@/common/store/base.service";
 import { Box, Button } from "@mui/material";
 import { PaymentInfo } from "../api/payment/vnpay/create-payment-url/route";
 import VNPayButton from "@/common/components/Payment/PaymentButton";
-import VNPayForm from "@/common/components/PaymentForm2";
 
 export default function Page() {
     const createPaymentUrl = async (paymentInfo: PaymentInfo): Promise<string> => {

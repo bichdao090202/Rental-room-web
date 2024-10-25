@@ -41,7 +41,7 @@ export const siteConfig = {
   userMenu: [
 		{ //Thông tin cá nhân , Phương thức thanh toán
 			label: "Tài khoản",
-			href: "/",
+			href: "/user",
 		},
     {
       label: "Quản lý tin đăng",

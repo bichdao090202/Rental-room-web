@@ -1,14 +1,22 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal } from '@mui/material';
+import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
-import { get } from '@/common/store/base.service';
+import { get, post } from '@/common/store/base.service';
 import { useRouter } from 'next/navigation';
 import { getSession, useSession } from 'next-auth/react';
-import OpenPdfButton from "@/common/components/OpenPdfButton";
 import { PaymentModal } from '../BookingRequestsList/PaymentModal';
 import { ModalCancelContract } from './ModalCancelContract';
 import { ModalOrder } from './ModalOrder';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import CustomFormControl from '@/common/components/FormControl';
+import { log } from 'console';
+
+interface FormInputs {
+    duration: number;
+    message: string;
+    date: string;
+}
 
 export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     const [bookingRequests, setBookingRequests] = useState<any[]>([]);
@@ -16,10 +24,48 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     const [paymentModal, setPaymentModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
     const [typeModal, setTypeModal] = useState<'cancel' | 'handle' | 'confirm'>('cancel');
-    const [contract, setContract] = useState(0);
+    const [contractId, setContractId] = useState(0);
+    const [contract, setContract] = useState<any>();
     const { data: session } = useSession();
+    const [defaultDate, setDefaultDate] = useState('');
 
     const [orderModal, setOrderModal] = useState(false);
+
+    const [openBookingModal, setOpenBookingModal] = useState(false);
+    const { control, handleSubmit, formState: { errors } } = useForm<FormInputs>({
+        mode: 'onSubmit'
+    });
+
+    const handleOpenBookingModal = async () => {
+        setOpenBookingModal(true)
+    };
+    const handleCloseBookingModal = () => setOpenBookingModal(false);
+
+    const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+        const session = await getSession();
+        console.log(contract);
+
+        const body = {
+            renter_id: session?.user?.id,
+            lessor_id: contract?.lessor_id,
+            room_id: contract?.room_id,
+            status: "PROCESSING",
+            note: "Waiting for landlord approval",
+            message_from_renter: data.message,
+            start_date: new Date(data.date).toISOString(),
+            rental_duration: Number(data.duration),
+        }
+        console.log(body);
+
+
+        const response = await post(`booking-requests`, body)
+        if (response.status == "SUCCESS") {
+            alert("Đã gửi yêu cầu đặt phòng thành công")
+            setOpenBookingModal(false)
+        }
+        else
+            alert("Thao tác thất bại, vui lòng thử lại")
+    };
 
     function getStatusText(status: number) {
         switch (status) {
@@ -66,7 +112,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     </Button>
 
                     <Button variant="contained" color="info" onClick={() => {
-                        setContract(row.id);
+                        setContractId(row.id);
                         setOrderModal(true);
                     }}>
                         Xem hóa đơn
@@ -81,7 +127,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     {
                         row.canceled_by == null &&
                         <Button variant="contained" color="primary" onClick={() => {
-                            setContract(row.id);
+                            setContractId(row.id);
                             setTypeModal('cancel');
                             setCancelModal(true);
                         }}>
@@ -92,7 +138,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     {
                         row.canceled_by == session?.user.id && row.pay_mode == 5 &&
                         <Button variant="outlined" color="primary" onClick={() => {
-                            setContract(row.id);
+                            setContractId(row.id);
                             setTypeModal('cancel');
                             setCancelModal(true);
                         }}>
@@ -103,7 +149,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     {
                         row.canceled_by != session?.user.id && row.pay_mode == 5 &&
                         <Button variant="contained" color="primary" onClick={async () => {
-                            setContract(row.id);
+                            setContractId(row.id);
                             setTypeModal('handle');
                             setCancelModal(true);
                         }}>
@@ -114,10 +160,25 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     {
                         row.canceled_by != null && row.canceled_by == session?.user.id && row.pay_mode == 6 &&
                         <Button variant="contained" color="primary" onClick={() => {
-                            setContract(row.id);
+                            setContractId(row.id);
                             setTypeModal('confirm');
                             setCancelModal(true);
                         }}> {`Xem phản hồi`}
+                        </Button>
+                    }
+
+                    {
+                        type == 'renter' && row.status == "Active" &&
+                        <Button variant="contained" color="success" onClick={() => {
+                            setContract(row);
+                            const date = new Date(row.date_rent);
+                            date.setMonth(date.getMonth() + row.rental_duration);
+                            date.setDate(date.getDate() + 1);
+                            const formattedDate = date.toISOString().split('T')[0];
+                            console.log(formattedDate);
+                            setDefaultDate(formattedDate);
+                            handleOpenBookingModal();
+                        }}> Gia hạn
                         </Button>
                     }
                 </Box>
@@ -157,7 +218,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     }, []);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%'  }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
             <Typography variant="h4" gutterBottom >
                 Danh sách hợp đồng
             </Typography>
@@ -174,8 +235,8 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             message_from_renter: request.message_from_renter,
                             message_from_lessor: request.message_from_lessor,
                             id: request.id,
-                            renter_id: request.renter_id,
-                            lessor_id: request.lessor_id,
+                            renter_id: request.renter.id,
+                            lessor_id: request.lessor.id,
                             room_id: request.room.id,
                             monthly_price: request.monthly_price,
                             deposit: request.room.deposit,
@@ -190,8 +251,55 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                 ))}
             </Box>
             {paymentModal && <PaymentModal onClose={handlePaymentModal} />}
-            {cancelModal && <ModalCancelContract onClose={handleCancelModal} contractId={contract} type={typeModal} />}
-            {orderModal && <ModalOrder onClose={handleOrderModal} contractId={contract} />}
+            {cancelModal && <ModalCancelContract onClose={handleCancelModal} contractId={contractId} type={typeModal} />}
+            {orderModal && <ModalOrder onClose={handleOrderModal} contractId={contractId} type={type} />}
+
+            <Dialog open={openBookingModal} onClose={handleCloseBookingModal} component="form" onSubmit={handleSubmit(onSubmit)} >
+                <DialogTitle>Yêu cầu thuê</DialogTitle>
+                <DialogContent>
+                    <Box className="max-w-lg mx-auto pt-5 bg-white rounded-lg space-y-5" >
+                        <CustomFormControl
+                            name="duration"
+                            control={control}
+                            type="number"
+                            label="Thời gian thuê"
+                            placeholder="Thời gian thuê (tháng)"
+                            error={errors.duration}
+                            rules={{
+                                required: 'Trường này là bắt buộc',
+                                min: { value: 1, message: 'Thời gian thuê tối thiểu là 1 tháng' }
+                            }}
+                        />
+                        <CustomFormControl
+                            name="message"
+                            control={control}
+                            type="text"
+                            label="Tin nhắn"
+                            placeholder="Tin nhắn cho chủ trọ"
+                            error={errors.message}
+                            rules={{ required: 'Trường này là bắt buộc' }}
+                        />
+                        <CustomFormControl
+                            name="date"
+                            control={control}
+                            type="date"
+                            label="Chọn ngày bắt đầu"
+                            error={errors.date}
+                            rules={{ required: 'Trường này là bắt buộc' }}
+                            disable={true}
+                            defaultValue={defaultDate}
+                        />
+
+                    </Box>
+                </DialogContent>
+
+                <DialogActions>
+                    <Button onClick={handleCloseBookingModal}>Hủy</Button>
+                    <Button type="submit" variant="contained" color="primary" >
+                        Gửi yêu cầu
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

@@ -1,21 +1,35 @@
 'use client'
-import { Box, Button, Divider, Grid, Modal, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Typography } from "@mui/material";
+import { Box, Button, Divider, Grid, Modal, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Typography, Alert } from "@mui/material";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { get, put } from "@/common/store/base.service";
 import Loading from "@/app/loading";
-import { Contract } from "@/types";
-import { formatCurrency, formatDatetime } from "@/common/utils/helpers";
+import { useTransactionStore } from "@/common/store/order/store";
+import { handlePayment } from "@/common/components/Payment/handlePayment";
 
 interface PaymentModalProps {
     onClose: () => void;
     contractId: number;
 }
 
+interface ServiceDemand {
+    service_history_id: number;
+    contract_id: number;
+    quality: number;
+    amount: number;
+    based_price: number;
+    name: string;
+    description: string;
+}
+
 export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contractId }) => {
     const [contract, setContract] = useState<any>();
     const [quantities, setQuantities] = useState<Record<number, number>>({});
     const [month, setMonth] = useState<number>(0);
+    const [error, setError] = useState<string>("");
+    const updateTransactionData = useTransactionStore((state) => state.updateData);
+    const data = useTransactionStore((state) => state.type);
+    console.log(data);
 
     const handleQuantityChange = (id: number, value: string) => {
         const quantity = value ? parseInt(value) : 0;
@@ -23,6 +37,7 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             ...prev,
             [id]: quantity,
         }));
+        setError(""); // Clear error when user starts typing
     };
 
     const totalAmount = contract?.services_history.reduce((total: any, service: any) => {
@@ -34,7 +49,6 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
         try {
             const res = await get(`contracts/${contractId}`);
             const result = res.data;
-            console.log(res);
             if (!result) return;
             let maxMonth = 0;
             result.invoices.map((invoice: any) => {
@@ -45,20 +59,65 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             setMonth(maxMonth + 1);
             setContract(result);
         } catch (error) {
-            console.error('Error fetching booking requests:', error);
+            console.error('Error fetching contracts:', error);
         }
     };
 
     useEffect(() => {
         fetchContracts();
-
     }, []);
 
+    const handleCreateOrder = async () => {
+        // Check if all services have quantities
+        const hasEmptyQuantities = contract.services_history.some(
+            (service: any) => !quantities[service.id]
+        );
+
+        if (hasEmptyQuantities) {
+            setError("Vui lòng nhập đầy đủ số lượng cho tất cả các dịch vụ");
+            return;
+        }
+
+        // Create service demands
+        const serviceDemands: ServiceDemand[] = contract.services_history.map((service: any) => ({
+            service_history_id: service.id,
+            contract_id: contractId,
+            quality: quantities[service.id],
+            amount: service.price * quantities[service.id],
+            based_price: service.price,
+            name: service.service_name,
+            description: service.description || ""
+        }));
+
+        // Create order object
+        const orderData = {
+            contract_id: contractId,
+            amount: totalAmount,
+            transaction_id: 1, // You might want to get this from somewhere
+            at_month: month,
+            start_date: new Date().toISOString(),
+            service_demands: serviceDemands
+        };
+
+        // Save to transaction store
+        updateTransactionData(orderData, 'CREATE_ORDER');
+
+        // Call payment handler
+        try {
+            await handlePayment({
+                userId: contract.user_id,
+                amount: totalAmount/100,
+                orderDescription: `Thanh toán hóa đơn tháng ${month}`
+            });
+            onClose();
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            setError("Có lỗi xảy ra khi xử lý thanh toán");
+        }
+    };
 
     if (!contract) {
-        return (
-            <Loading></Loading>
-        )
+        return <Loading />;
     }
 
     return (
@@ -67,7 +126,6 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             onClose={onClose}
             aria-labelledby="custom-modal-title"
             aria-describedby="custom-modal-description"
-
         >
             <Box
                 sx={{
@@ -89,19 +147,18 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
 
                 <Divider sx={{ mb: 2 }} />
 
+                {error && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                    </Alert>
+                )}
 
                 <Typography component="h2" sx={{ fontWeight: 'bold' }} >
                     Thông tin hóa đơn:
                 </Typography>
-
-                <Typography  >
-                    Mã hợp đồng(ID): {contractId}
-                </Typography>
-
-                <Typography  >
+                <Typography>
                     Tháng: {month}
                 </Typography>
-
 
                 <Divider sx={{ mb: '20px', mt: '20px' }} />
 
@@ -129,6 +186,7 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
                                             value={quantities[service.id] || ''}
                                             onChange={(e) => handleQuantityChange(service.id, e.target.value)}
                                             inputProps={{ min: 0 }}
+                                            error={!quantities[service.id] && error !== ""}
                                         />
                                     </TableCell>
                                     <TableCell align="right">
@@ -152,7 +210,11 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
                 <Divider sx={{ mb: 2 }} />
 
                 <Box sx={{ mb: 2 }}>
-                    <Button variant="contained" sx={{ width: '100%' }}>
+                    <Button 
+                        variant="contained" 
+                        sx={{ width: '100%' }}
+                        onClick={handleCreateOrder}
+                    >
                         Tạo hóa đơn
                     </Button>
                 </Box>

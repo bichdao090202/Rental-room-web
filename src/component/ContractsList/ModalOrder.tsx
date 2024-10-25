@@ -13,9 +13,10 @@ import CustomModal from "@/common/components/modal";
 interface PaymentModalProps {
     onClose: () => void;
     contractId: number;
+    type: 'lessor' | 'renter';
 }
 
-export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId }) => {
+export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, type }) => {
     const [contract, setContract] = useState<Contract>();
     const [modalCreate, setModalCreate] = useState(false);
     const [modalInvoice, setModalInvoice] = useState(false);
@@ -115,14 +116,17 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId })
                                         <Typography variant="body1">
                                             <strong>Số tiền:</strong> {formatCurrency(invoice.amount)}
                                         </Typography>
+                                        <Typography variant="body1">
+                                            <strong>Tháng:</strong> {invoice.at_month}
+                                        </Typography>
                                     </Grid>
                                     <Grid item>
                                         <Button variant="contained" color="primary"
                                             onClick={() => {
+                                                console.log(invoice);
                                                 setInvoice(invoice);
                                                 setModalInvoice(true);
                                             }}
-
                                         >
                                             Xem
                                         </Button>
@@ -134,9 +138,13 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId })
 
                     <Box sx={{ mt: '10px' }}></Box>
 
-                    <Button variant="contained" sx={{ mt: '10px' }} onClick={() => {
-                        setModalCreate(true);
-                    }}>Tạo hóa đơn</Button>
+
+                    {type == 'renter' &&
+                        <Button variant="contained" sx={{ mt: '10px' }} onClick={() => {
+                            setModalCreate(true);
+                        }}>Tạo hóa đơn</Button>
+
+                    }
 
 
                     {/*<Typography  >*/}
