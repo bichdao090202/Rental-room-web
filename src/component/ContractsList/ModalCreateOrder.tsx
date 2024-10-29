@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { get, put } from "@/common/store/base.service";
 import Loading from "@/app/loading";
 import { useTransactionStore } from "@/common/store/order/store";
-import { handlePayment } from "@/common/components/Payment/handlePayment";
+import { handlePayment } from "@/service/handlePayment";
 
 interface PaymentModalProps {
     onClose: () => void;
@@ -68,7 +68,6 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
     }, []);
 
     const handleCreateOrder = async () => {
-        // Check if all services have quantities
         const hasEmptyQuantities = contract.services_history.some(
             (service: any) => !quantities[service.id]
         );
@@ -78,7 +77,6 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             return;
         }
 
-        // Create service demands
         const serviceDemands: ServiceDemand[] = contract.services_history.map((service: any) => ({
             service_history_id: service.id,
             contract_id: contractId,
@@ -89,11 +87,10 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             description: service.description || ""
         }));
 
-        // Create order object
         const orderData = {
             contract_id: contractId,
             amount: totalAmount,
-            transaction_id: 1, // You might want to get this from somewhere
+            transaction_id: 1, 
             at_month: month,
             start_date: new Date().toISOString(),
             service_demands: serviceDemands

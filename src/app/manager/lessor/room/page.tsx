@@ -1,14 +1,16 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Box } from '@mui/material';
+import { Container, Typography, Grid, Box, Button } from '@mui/material';
 import { Room } from '@/types';
 import { get } from '@/common/store/base.service';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
 import { formatCurrency } from '@/common/utils/helpers';
+import { useRouter } from 'next/navigation';
 
 
 export default function Page() {
     const [rooms, setRooms] = useState<Room[]>([])
+    const router = useRouter();
     const headCells: HeadCell[] = [
         { id: 'price', label: 'Giá' },
         { id: 'deposit', label: 'Tiền cọc' },
@@ -34,6 +36,12 @@ export default function Page() {
             <Typography variant="h4" gutterBottom >
                 Danh sách phòng của bạn
             </Typography>
+            <Button variant="contained" color="primary" onClick={() => router.push('/manager/lessor/room/create')}>
+
+                Thêm phòng
+            </Button>
+
+
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {rooms.map((room) => (
                     <SmallCard key={room.id} 

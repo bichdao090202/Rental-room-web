@@ -1,0 +1,16 @@
+Transaction type:
+1: deposit -> deposit money to account +
+2: withdraw -> withdraw money from account -
+3: payment -> payment for a service (room deposit, room service) -
+4: refund -> refund money after finishing contract +
+
+Transaction description:
+
+Status: 1 - success, 2 - fail
+
+payment: payment for a service
+{
+    type: deposit | deposit - room | room | room - service,
+    data: invoice body | null,
+    no: transaction no - string
+},

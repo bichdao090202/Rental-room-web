@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 import { Room } from '../types/index';
 import { ModalOrder } from "@/component/ContractsList/ModalOrder";
+import { Add } from "@mui/icons-material";
+import AddressSelector from "@/component/AddressSelector";
 
 interface Address {
   city: string;
@@ -95,6 +97,7 @@ export default function Home() {
       }}
     >
       <Container sx={{ py: 4, width: '100%' }}>
+        <AddressSelector />
         <Grid container spacing={4}>
           {rooms.map((room) => (
             <Grid item key={room.id} xs={12} sm={6} md={4} lg={3}>
