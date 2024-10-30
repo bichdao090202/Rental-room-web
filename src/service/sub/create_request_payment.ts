@@ -22,7 +22,7 @@ export interface HandlePaymentParams {
     orderDescription: string;
 }
 
-export const handlePayment = async ({ userId, amount, orderDescription }: HandlePaymentParams): Promise<void> => {
+export const createRequestPayment = async ({ userId, amount, orderDescription }: HandlePaymentParams): Promise<void> => {
     const orderId = `${new Date().getTime()}-${userId}`;
     const paymentInfo: PaymentInfo = {
         amount,

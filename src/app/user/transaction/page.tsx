@@ -26,6 +26,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { get } from '@/common/store/base.service';
 import { formatDatetime } from '@/common/utils/helpers';
 import axios from 'axios';
+import { createTransaction } from '@/service/main/create_transaction';
 
 interface Transaction {
   id: number;
@@ -76,12 +77,6 @@ const getStatusLabel = (status: number) => {
   }
 };
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(amount);
-};
 
 export default function Page() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -90,14 +85,19 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>();
 
+  console.log(user?.balance);
+
+
   useEffect(() => {
     fetchTransactions();
+    fetchBalance();
   }, []);
 
   const fetchTransactions = async () => {
     try {
       const session = await getSession();
-      if (!session) return; 
+      if (!session) return;
+
       // try {
       //   const response = await axios.get(`http://54.253.233.87:3006/api/v1/users/${session.user.id}`, {
       //     headers: {
@@ -110,9 +110,6 @@ export default function Page() {
       // } catch (error) {
       //   console.error("Error fetching user data:", error);
       // }
-
-
-
       // setUser(session?.user);
       if (session?.user?.id) {
         const response = await get(`transactions?user_id=${session.user.id}`);
@@ -129,6 +126,24 @@ export default function Page() {
       setLoading(false);
     }
   };
+
+  const fetchBalance = async () => {
+    const session = await getSession();
+    if (!session) return;
+
+    try {
+      const response = await axios.get(`http://54.253.233.87:3006/api/v1/users/${session.user.id}`, {
+        headers: {
+          Authorization: `${session.accessToken}`
+        }
+      });
+      const userData = response.data.data;
+      setUser(userData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
+
 
   const handleClickOpen = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -148,13 +163,27 @@ export default function Page() {
     );
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(value);
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 3 }}>
-        {/* <Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
           Số dư: {formatCurrency(user?.balance)}
-        </Typography> */}
+        </Typography>
+        <Button variant="contained" color="primary" onClick={() => {
+          createTransaction(user?.id, 'DEPOSIT', 20000, {});
+        }}>
+          + Nạp tiền
+        </Button>
+      </Box>
 
+      <Paper elevation={3} sx={{ p: 3 }}>
         <Typography variant="h5" component="h1" gutterBottom>
           Lịch sử giao dịch
         </Typography>

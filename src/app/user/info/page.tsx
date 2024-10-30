@@ -50,7 +50,7 @@ export default function Home() {
         //       img_url: "",
         //       phone: "0905015625"
         //     };
-
+        
         try {
             const response = await axios.get(`http://54.253.233.87:3006/api/v1/users/${session.user.id}`, {
                 headers: {

@@ -104,7 +104,6 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
                         Danh sách hóa đơn:
                     </Typography>
 
-
                     <Grid container spacing={2} sx={{ maxHeight: 400, overflowY: 'auto', marginTop: '1px' }}>
                         {contract.invoices.map((invoice: any, index: number) => (
                             <Grid item xs={12} key={invoice.id}>
@@ -116,9 +115,12 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
                                         <Typography variant="body1">
                                             <strong>Số tiền:</strong> {formatCurrency(invoice.amount)}
                                         </Typography>
-                                        <Typography variant="body1">
-                                            <strong>Tháng:</strong> {invoice.at_month}
-                                        </Typography>
+                                        {
+                                            invoice.at_month == 0 ? <></> :
+                                                <Typography variant="body1">
+                                                    <strong>Tháng:</strong> {invoice.at_month}
+                                                </Typography>
+                                        }
                                     </Grid>
                                     <Grid item>
                                         <Button variant="contained" color="primary"
@@ -138,69 +140,17 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
 
                     <Box sx={{ mt: '10px' }}></Box>
 
-
                     {type == 'renter' &&
                         <Button variant="contained" sx={{ mt: '10px' }} onClick={() => {
                             setModalCreate(true);
                         }}>Tạo hóa đơn</Button>
-
                     }
 
-
-                    {/*<Typography  >*/}
-                    {/*    Tiền cọc: {contract.room?.deposit}*/}
-                    {/*</Typography>*/}
-
-                    {/*<Typography  >*/}
-                    {/*    Đang chờ hủy: {(contract.canceled_by==null? 'Không': contract.canceled_by==contract.renter.id?'Người thuê':'Chủ trọ')}*/}
-                    {/*</Typography>*/}
-
-                    {/*<Divider sx={{ my: 2 }} />*/}
-
-
                 </Box>
-                <Box display="flex" justifyContent="flex-end" gap={2}>
-                    {/*<Button variant="contained" sx={{ background: 'primary' }} onClick={ async () => {*/}
-                    {/*    const body = {*/}
-                    {/*        ...contract,*/}
-                    {/*        pay_mode : 2,*/}
-                    {/*        status: 6*/}
-                    {/*    }*/}
-                    {/*    // await put(`contracts/${contract.id}`,body)*/}
-                    {/*    onClose()*/}
-                    {/*}}>*/}
-                    {/*    Đồng ý*/}
-                    {/*</Button>*/}
-                    {/*<Button variant="contained" onClick={ async () => {*/}
-                    {/*    const body = {*/}
-                    {/*        ...contract,*/}
-                    {/*        pay_mode : 6,*/}
-                    {/*    }*/}
-                    {/*    // await put(`contracts/${contract.id}`,body)*/}
-                    {/*    onClose()*/}
-                    {/*}}>*/}
-                    {/*    Không đồng ý*/}
-                    {/*</Button>*/}
+                <Box display="flex" justifyContent="flex-end" gap={2}>                    
                 </Box>
                 {modalCreate && <ModalCreateOrder onClose={handleModalCreate} contractId={contractId} />}
                 {modalInvoice && <ModalViewInvoice onClose={handleModalInvoice} invoice={invoice} />}
-
-                {/* <CustomModal
-                    open={open}
-                    onClose={handleClose}
-                    width="70%"
-                    height="auto"
-                    title="Chọn hợp đồng cho yêu cầu thuê"
-                    type="confirm"
-                    onConfirm={handleConfirm}
-
-                >
-                    invoiceId: {invoiceId}
-                </CustomModal> */}
-
-
-
-
             </Box>
         </Modal>
     );

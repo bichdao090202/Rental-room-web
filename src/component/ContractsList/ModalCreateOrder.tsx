@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { get, put } from "@/common/store/base.service";
 import Loading from "@/app/loading";
 import { useTransactionStore } from "@/common/store/order/store";
-import { handlePayment } from "@/service/handlePayment";
+import { createRequestPayment } from "@/service/sub/create_request_payment";
 
 interface PaymentModalProps {
     onClose: () => void;
@@ -96,12 +96,10 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             service_demands: serviceDemands
         };
 
-        // Save to transaction store
         updateTransactionData(orderData, 'CREATE_ORDER');
 
-        // Call payment handler
         try {
-            await handlePayment({
+            await createRequestPayment({
                 userId: contract.user_id,
                 amount: totalAmount/100,
                 orderDescription: `Thanh toán hóa đơn tháng ${month}`

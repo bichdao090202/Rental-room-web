@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { get, put } from "@/common/store/base.service";
 import Loading from "@/app/loading";
 import { Contract } from "@/types";
+import { createTransaction } from "@/service/main/create_transaction";
 
 interface PaymentModalProps {
     onClose: () => void;
@@ -125,7 +126,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         <Typography>
                             Bạn vừa nhận được yêu cầu hủy hợp đồng thuê nhà từ phía đối tác.
                             Xin lưu ý rằng nếu bạn đồng ý hủy hợp đồng, toàn bộ quá trình sẽ kết thúc mà không ảnh hưởng đến khoản tiền đặt cọc.
-                            Tuy nhiên, nếu bạn không đồng ý, đối tác sẽ mất khoản tiền đặt cọc đã thanh toán khi ký hợp đồng.
+                            Tuy nhiên, nếu bạn không đồng ý, đối tác sẽ mất khoản tiền đặt cọc đã thanh toán khi ký hợp đồng để bồi thường cho bạn.
                         </Typography>
                     }
 
@@ -167,6 +168,8 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                                 canceled_by: contract?.canceled_by.id,
                             }
                             await put(`contracts/${contract.id}`, body)
+                            const id = contract?.canceled_by.id == contract?.renter.id ? contract?.lessor.id : contract?.renter.id
+                            createTransaction(id, 'REFUND', (contract.room!.deposit) * 2, contract?.id)
                             onClose()
                         }}>
                             Đồng ý
@@ -204,6 +207,8 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                             }
                             console.log(body);
                             const res = await put(`contracts/${contract.id}`, body)
+                            createTransaction(contract?.lessor.id, 'REFUND', contract.room!.deposit, contract?.id)
+                            createTransaction(contract?.renter.id, 'REFUND', contract.room!.deposit, contract?.id)
                             onClose()
                         }}>
                             Đồng ý

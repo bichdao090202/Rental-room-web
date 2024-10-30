@@ -3,14 +3,10 @@ import { Badge, Box, Button, Card, CardContent, createStyles, Divider, Grid, Lis
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoadingBox from "@/common/components/LoadingBox";
-import FormControlDisable from "@/common/components/DisableTextfield";
 import { formatCurrency, formatDatetime } from "@/common/utils/helpers";
-import { Cancel, CheckCircle } from "@mui/icons-material";
-import { create } from "domain";
-import { createContract } from "./createContract";
-import { post } from "@/common/store/base.service";
 import { useTransactionStore } from "@/common/store/order/store";
 import { getSession } from "next-auth/react";
+import { handleReturnUrl } from "@/service/main/handle_return_url";
 
 interface PaymentResult {
   vnp_Amount: string;
@@ -31,62 +27,8 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  // const router = useRouter();
   const transactionType = useTransactionStore((state) => state.type);
   const orderData = useTransactionStore((state) => state.data);
-
-
-  const createTransaction = async (data: any) => {
-    const session = await getSession();
-    const transactionBody = {
-      user_id: session?.user?.id,
-      amount: parseInt(data.vnp_Amount),
-      transaction_type: 1,
-      status: data.vnp_TransactionStatus === '00' ? 1 : 2,
-      description: `${transactionType}`,
-      transaction_no: data.vnp_TransactionNo,
-      payment_method: 0
-    };
-
-    let transactionResult;
-    try {
-      transactionResult = await post(`transactions`, transactionBody);
-    } catch (error) {
-      console.error("Failed to post transaction:", error);
-      transactionResult = { id: 8 };
-    }
-
-
-    if (transactionType === 'CREATE_ORDER') {
-      const newTrans = {
-        ...transactionBody,
-        transaction_type: 3,
-        status: 1,
-        description: 'PAYMENT_ORDER',
-        transaction_no: `${data.vnp_TransactionNo}- ${orderData.contract_id}`,
-      };
-      transactionResult = await post(`transactions`, newTrans);
-      const invoiceBody = {
-        ...orderData,
-        transaction_id: transactionResult.data.id ? transactionResult.data.id : 8
-      };
-
-      const invoice = await post('invoices', invoiceBody);
-      console.log(invoice);
-    }
-
-
-    // if (data.vnp_TransactionStatus === '00' &&
-    //   transactionType === 'CREATE_ORDER' &&
-    //   transactionResult.id) {
-    //   const invoiceBody = {
-    //     ...orderData,
-    //     transaction_id: transactionResult.id
-    //   };
-    //   const invoice = await post('invoices', invoiceBody);
-    //   console.log(invoice);
-    // }
-  }
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -98,11 +40,14 @@ export default function Page() {
         const data = await response.json();
         if (data.isSuccess && data.isVerified && data.vnp_TransactionStatus === '00') { //vnp_ResponseCode
           setPaymentResult(data);
-          // createContract(data);
-        } else setPaymentResult(data);
+        }
 
-        if (orderData)
-          createTransaction(data);
+        console.log(data);
+
+        const session = await getSession();
+
+        handleReturnUrl(parseInt(session!.user.id), transactionType, data,orderData);
+
       } catch (err) {
         setError('Có lỗi xảy ra khi xác thực thanh toán');
       } finally {
@@ -177,9 +122,6 @@ export default function Page() {
           </Grid>
         </Grid>
       </Paper>
-
-
-
     </Box>
   );
 }

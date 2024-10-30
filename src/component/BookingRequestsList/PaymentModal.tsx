@@ -1,10 +1,14 @@
+'use client'
 import {Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography} from "@mui/material";
 import { PaymentInfo } from '../../app/api/payment/vnpay/create-payment-url/route';
-import { handlePayment } from "@/service/handlePayment";
+import { createRequestPayment } from "@/service/sub/create_request_payment";
 import { formatCurrency } from "@/common/utils/helpers";
 import CustomFormControl from "@/common/components/FormControl";
 import FormControlDisable from "@/common/components/DisableTextfield";
 import React from "react";
+import { userAction } from "@/common/store/user/users.actions";
+import { createTransaction } from "@/service/main/create_transaction";
+import { useTransactionStore } from "@/common/store/order/store";
 
 export const orderInit = {
     bookingRequestId: 0,
@@ -34,13 +38,16 @@ interface OrderDetail {
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) => {
+    const updateTransactionData = useTransactionStore((state) => state.updateData);
+    const data = useTransactionStore((state) => state.type);
+
     let total = 0;
     let orderDescription = '';
 
     if(!order) return null;
     if (order.deposit) {
         total = order.deposit + order.priceMonth;
-        orderDescription = 'Thanh toan tien coc va tien thue phong thang 1';
+        orderDescription = 'DEPOSIT,ROOM_CONTRACT';
     } else {
         total = order.priceMonth;
         orderDescription = 'Thanh toan tien thue phong va dich vu';
@@ -136,13 +143,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                 </Box>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
                     <Button variant="contained" sx={{ background: '#1976d2' }} onClick={() => {
-                        const PaymentInfo = {
-                            amount: total / 100,
-                            // userId: order.userId,
-                            userId: order.bookingRequestId,
-                            orderDescription: orderDescription,
-                        }
-                        handlePayment(PaymentInfo);
+                        // const PaymentInfo = {
+                        //     amount: total / 100,
+                        //     // userId: order.userId,
+                        //     userId: order.bookingRequestId,
+                        //     orderDescription: orderDescription,
+                        // }
+                        // createRequestPayment(PaymentInfo);
+                        updateTransactionData(order, "DEPOSIT,ROOM_CONTRACT");
+                        createTransaction(order.bookingRequestId, "DEPOSIT,ROOM_CONTRACT", total/100, order);
                     }}>
                         Thanh toán
                     </Button>
