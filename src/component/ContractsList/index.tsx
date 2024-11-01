@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
-import { get, post } from '@/common/store/base.service';
+import { get, post, put } from '@/common/store/base.service';
 import { useRouter } from 'next/navigation';
 import { getSession, useSession } from 'next-auth/react';
 import { PaymentModal } from '../BookingRequestsList/PaymentModal';
@@ -11,6 +11,8 @@ import { ModalOrder } from './ModalOrder';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import CustomFormControl from '@/common/components/FormControl';
 import { log } from 'console';
+import ModalThanhKhoan from './ModalThanhKhoan';
+import CustomModal from '@/common/components/modal';
 
 interface FormInputs {
     duration: number;
@@ -24,10 +26,14 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     const [paymentModal, setPaymentModal] = useState(false);
     const [cancelModal, setCancelModal] = useState(false);
     const [typeModal, setTypeModal] = useState<'cancel' | 'handle' | 'confirm'>('cancel');
+    const [thanhKhoanModal, setThanhKhoanModal] = useState(false);
     const [contractId, setContractId] = useState(0);
     const [contract, setContract] = useState<any>();
     const { data: session } = useSession();
     const [defaultDate, setDefaultDate] = useState('');
+    const [openAlert, setOpenAlert] = useState(false);
+    const [message, setMessage] = useState('');
+
 
     const [orderModal, setOrderModal] = useState(false);
 
@@ -40,6 +46,16 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
         setOpenBookingModal(true)
     };
     const handleCloseBookingModal = () => setOpenBookingModal(false);
+
+
+    const handleConfirm = async () => {
+        setOpenAlert(false);
+
+    }
+
+    const closeModalConfirm = () => {
+        setOpenAlert(false);
+    }
 
     const onSubmit: SubmitHandler<FormInputs> = async (data) => {
         const session = await getSession();
@@ -69,39 +85,86 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
 
     function getStatusText(status: number) {
         switch (status) {
+            // case 1:
+            //     return 'Processing';
+            // case 2:
+            //     return 'Active';
+            // case 3:
+            //     return 'Finished';
+            // case 4:
+            //     return 'Failure';
+            // case 5:
+            //     return 'One-side cancel';
+            // case 6:
+            //     return 'Agreed cancel';
+            // case 7:
+            //     return 'Đang chờ thanh khoản';
+            // default:
+            //     return 'Unknown status';
             case 1:
-                return 'Processing';
+                return "Đang xử lý";
             case 2:
-                return 'Active';
+                return "Đang có hiệu lực";
             case 3:
-                return 'Finished';
+                return "Đã kết thúc";
             case 4:
-                return 'Failure';
+                return "Thất bại";
             case 5:
-                return 'One-side cancel';
+                return "Hủy một phía";
             case 6:
-                return 'Agreed cancel';
+                return "Hủy đồng thuận";
+            case 7:
+                return "Đang chờ thanh khoản";
             default:
-                return 'Unknown status';
+                return "Trạng thái không xác định";
+        }
+    }
+
+    function isLastMonth(startDate: Date, rentalDuration: number) {
+        const start = new Date(startDate);
+        const endDate = new Date(start);
+        endDate.setMonth(start.getMonth() + rentalDuration - 1);
+
+        const currentDate = new Date();
+        return (
+            currentDate.getMonth() === endDate.getMonth() &&
+            currentDate.getFullYear() === endDate.getFullYear()
+        );
+    }
+
+    const thanhKhoan = async (row: any) => {
+        const res = await get(`contracts/${row.id}`);
+        const result = res.data;
+        const body = {
+            ...result,
+            status: 7,
+            renter_id: row.renter_id,
+            lessor_id: row.lessor_id,
+            room_id: row.room_id,
+            canceled_by: row.canceled_by,
+        }
+        const response = await put(`contracts/${row.id}`, body)
+        if (response.status == "SUCCESS") {
+            setOpenAlert(true);
+            setMessage("Bạn đã gửi yêu cầu thanh khoản, vui lòng chờ chủ nhà xác nhận")
         }
     }
 
     const headCells: HeadCell[] = [
         { id: 'status', label: 'Trạng thái' },
-        // { id: 'note', label: 'Ghi chú' },
-        { id: 'date_rent', label: 'Ngày bắt đầu' },
+        { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
         // { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
         { id: 'monthly_price', label: 'Giá mỗi tháng' },
+        { id: 'deposit', label: 'Tiền cọc' },
         {
             id: 'action', label: "Action",
             render: (row) =>
             (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {row.note == "Waiting for renter to sign and pay" && (
-                        <Button variant="contained" color="success" onClick={() => {
+                        <Button variant="contained" color="primary" onClick={() => {
                             setPaymentModal(true);
-                            console.log(row.id);
                         }}>Thanh toán</Button>
                     )}
 
@@ -114,19 +177,15 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     <Button variant="contained" color="info" onClick={() => {
                         setContractId(row.id);
                         setOrderModal(true);
-                    }}>
-                        Xem hóa đơn
-                    </Button>
+                    }}> Xem hóa đơn</Button>
 
-                    {/* <Button variant="contained" color="primary" onClick={() => {
-                        router.push(`/room/${row.room_id}`)
-                    }}>
-                        Xem phòng
-                    </Button> */}
+
+
+
 
                     {
-                        row.canceled_by == null &&
-                        <Button variant="contained" color="primary" onClick={() => {
+                        !isLastMonth(row.start_date, row.rental_duration) && row.canceled_by == null && row.status == "Đang có hiệu lực" && 
+                        <Button variant="contained" color="error" onClick={() => {
                             setContractId(row.id);
                             setTypeModal('cancel');
                             setCancelModal(true);
@@ -134,6 +193,39 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             Hủy hợp đồng
                         </Button>
                     }
+
+
+                    {
+                        isLastMonth(row.start_date, row.rental_duration) && row.status == "Đang có hiệu lực" &&
+                        type === 'renter' && row.status != "Đang chờ thanh khoản" &&
+                        <Button variant="contained" color="warning" onClick={async () => {
+                            // setOpenAlert(true);
+                            // setMessage("Bạn thật sự muốn thanh khoản hợp đồng này?")
+                            thanhKhoan(row)
+                        }}>Thanh khoản</Button>
+                    }
+
+                    {
+                        type === 'renter' && row.status == "Đang chờ thanh khoản" && 
+                        <Button variant="contained" color="warning" onClick={async () => {
+                            setOpenAlert(true);
+                            setMessage("Bạn đã gửi yêu cầu thanh khoản, vui lòng chờ chủ nhà xác nhận")
+                        }}>
+                            <i>Chờ thanh khoản</i>
+                        </Button>
+                    }
+
+                    {
+                        type === 'lessor' && row.status == "Đang chờ thanh khoản"
+                        &&
+                        <Button variant="contained" color="warning" onClick={async () => {
+                            setContractId(row.id);
+                            setThanhKhoanModal(true);
+                        }}>
+                            Chờ thanh khoản
+                        </Button>
+                    }
+
 
                     {
                         row.canceled_by == session?.user.id && row.pay_mode == 5 &&
@@ -153,7 +245,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             setTypeModal('handle');
                             setCancelModal(true);
                         }}>
-                            Xem yêu cầu hủy
+                            Yêu cầu hủy
                         </Button>
                     }
 
@@ -168,19 +260,21 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     }
 
                     {
-                        type == 'renter' && row.status == "Active" &&
+                        type == 'renter' && row.status == "Đang có hiệu lực" && row.status == "Đang có hiệu lực" &&
                         <Button variant="contained" color="success" onClick={() => {
                             setContract(row);
                             const date = new Date(row.date_rent);
                             date.setMonth(date.getMonth() + row.rental_duration);
                             date.setDate(date.getDate() + 1);
                             const formattedDate = date.toISOString().split('T')[0];
-                            console.log(formattedDate);
                             setDefaultDate(formattedDate);
                             handleOpenBookingModal();
                         }}> Gia hạn
                         </Button>
                     }
+
+
+
                 </Box>
             )
         }
@@ -213,6 +307,10 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
         setOrderModal(false);
     };
 
+    const handleThanhKhoanModal = () => {
+        setThanhKhoanModal(false);
+    }
+
     useEffect(() => {
         fetchBookingRequests();
     }, []);
@@ -243,16 +341,34 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             payment_mode: request.payment_mode,
                             canceled_by: request.canceled_by?.id,
                             pay_mode: request.pay_mode,
-                            file_path: request.file_path
+                            file_path: request.file_path,
+                            start_date: request.start_date,
                         }}
                         headCells={headCells}
                     />
 
                 ))}
             </Box>
+
+            {openAlert &&
+                <CustomModal
+                    open={true}
+                    onClose={closeModalConfirm}
+                    width="70%"
+                    height="auto"
+                    title="Thanh khoản hợp đồng"
+                    type="confirm"
+                    onConfirm={handleConfirm}
+                >
+                    {message}
+                </CustomModal>
+            }
+
+
             {paymentModal && <PaymentModal onClose={handlePaymentModal} />}
             {cancelModal && <ModalCancelContract onClose={handleCancelModal} contractId={contractId} type={typeModal} />}
             {orderModal && <ModalOrder onClose={handleOrderModal} contractId={contractId} type={type} />}
+            {thanhKhoanModal && <ModalThanhKhoan onClose={handleThanhKhoanModal} contractId={contractId} />}
 
             <Dialog open={openBookingModal} onClose={handleCloseBookingModal} component="form" onSubmit={handleSubmit(onSubmit)} >
                 <DialogTitle>Yêu cầu thuê</DialogTitle>

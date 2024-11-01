@@ -39,9 +39,10 @@ export const handleReturnUrl = async (userId: number, transactionType: string, d
         };
         transactionResult = await post(`transactions`, newTrans);
 
-        if (transactionResult.status === "SUCCESS") {
-            createContract(data, transactionResult.data.id);
-        }
+        createContract(data, transactionResult.data.id);
+        // if (transactionResult.status === "SUCCESS") {
+        //     createContract(data, transactionResult.data.id);
+        // }
     }
 
     if (transactionType === 'CREATE_ORDER') {
@@ -97,20 +98,23 @@ const createContract = async (data: any, transId: number) => {
         file_name: bookingRequest.room.title,
         payment: bookingRequest.rental_duration,
     }
-    const responseUpdateBookingRequest = await put(`booking-requests/${bodyBookingRequest.id}`, bodyBookingRequest);
-    console.log(responseUpdateBookingRequest);
 
-    const responseCreateContract = await post(`contracts`, bodyContract);
-    console.log(responseCreateContract);
+    console.log(bodyContract);
 
-    const bodyOrder = {
-        contract_id: responseCreateContract.data.id,
-        amount: data.vnp_Amount,
-        start_date: formatDatePost(data.vnp_PayDate),
-        transaction_id: transId,
-        hash: "DEPOSIT,ROOM_CONTRACT"
-    }
+    // const responseUpdateBookingRequest = await put(`booking-requests/${bodyBookingRequest.id}`, bodyBookingRequest);
+    // console.log(responseUpdateBookingRequest);
 
-    const order = await post(`invoices`, bodyOrder);
-    console.log(order);
+    // const responseCreateContract = await post(`contracts`, bodyContract);
+    // console.log(responseCreateContract);
+
+    // const bodyOrder = {
+    //     contract_id: responseCreateContract.data.id,
+    //     amount: data.vnp_Amount,
+    //     start_date: formatDatePost(data.vnp_PayDate),
+    //     transaction_id: transId,
+    //     hash: "DEPOSIT,ROOM_CONTRACT"
+    // }
+
+    // const order = await post(`invoices`, bodyOrder);
+    // console.log(order);
 }

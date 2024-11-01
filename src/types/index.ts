@@ -46,6 +46,7 @@ export interface Room {
   services?: Service[] | null;
   images: string[];
   bookingRequests?: any[] | null;
+  borrowed_items:any[] | null;
 }
 
 export interface Service {
@@ -203,6 +204,7 @@ const mockroom: Room = {
     province_name: 'TP.HCM',
     ward_name: 'Phường Bến Nghé',
   },
+  borrowed_items: [],
   price: 5000000,
   description: 'Phòng rộng rãi, thoáng mát, gần trung tâm.',
   owner_id: 1001,
