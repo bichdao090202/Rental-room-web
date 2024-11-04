@@ -205,13 +205,27 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                         }}>Thanh khoản</Button>
                     }
 
-                    {
+{
                         type === 'renter' && row.status == "Đang chờ thanh khoản" && 
                         <Button variant="contained" color="warning" onClick={async () => {
                             setOpenAlert(true);
                             setMessage("Bạn đã gửi yêu cầu thanh khoản, vui lòng chờ chủ nhà xác nhận")
+                            // setContractId(row.id);
+                            // setThanhKhoanModal(true);
                         }}>
                             <i>Chờ thanh khoản</i>
+                        </Button>
+                    }
+
+                    {
+                        type === 'renter' && row.status == "Đã kết thúc" && 
+                        <Button variant="contained" color="warning" onClick={async () => {
+                            // setOpenAlert(true);
+                            // setMessage("Bạn đã gửi yêu cầu thanh khoản, vui lòng chờ chủ nhà xác nhận")
+                            setContractId(row.id);
+                            setThanhKhoanModal(true);
+                        }}>
+                            Đã thanh khoản
                         </Button>
                     }
 
