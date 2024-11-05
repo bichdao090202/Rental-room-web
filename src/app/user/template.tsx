@@ -1,28 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Icon, IconButton } from '@mui/material';
 import Sidebar from '@/component/Sidebar';
 import MainNavbar from '@/component/MainNavbar';
 import { getSession, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import LoadingBox from '@/common/components/LoadingBox';
+import { HomeMini, ManageAccounts, MedicalInformation, Paid, PaidOutlined, SupervisedUserCircle } from '@mui/icons-material';
 
 const items = [
     {
         title: 'Thông tin',
         key: '/user/info',
+        icon: SupervisedUserCircle,
         
     },
     {
         title: 'Tài khoản',
         key: '/user/account',
-        
+        icon: ManageAccounts
     },
     {
         title: 'Giao dịch',
         key: '/user/transaction',
-        
+        icon: Paid
     },
 
 ];

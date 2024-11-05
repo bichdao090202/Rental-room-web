@@ -112,3 +112,24 @@ export const put = async (
   return res;
   
 };
+
+export const signPost = async (
+  url: string,
+  data?: any,
+): Promise<any> => {
+  console.log(`${process.env.NEXT_PUBLIC_API_URL_SIGN_GATEWAY}/${url}`);
+  
+    const response = await fetch(
+      `${process.env.SIGN_GATEWAY}/${url}` ,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      },
+    );
+
+    const res = await response.json();
+    return res;
+};

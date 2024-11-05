@@ -39,7 +39,7 @@ const items = [
         items: [
             {
                 title: 'Yêu cầu thuê',
-                key: '/manager/renter/booking-request',
+                key: '/manager/renter/booking-request',                
             },
             {
                 title: 'Hợp đồng',

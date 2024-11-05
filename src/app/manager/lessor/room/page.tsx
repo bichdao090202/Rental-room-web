@@ -33,14 +33,10 @@ export default function Page() {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', width: '70vw' }}>
-            <Typography variant="h4" gutterBottom >
-                Danh sách phòng của bạn
-            </Typography>
-            <Button variant="contained" color="primary" onClick={() => router.push('/manager/lessor/room/create')}>
-
-                Thêm phòng
-            </Button>
-
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                <Typography variant="h4">Danh sách phòng</Typography>
+                <Button variant="contained" onClick={() => router.push('/manager/lessor/room/create')}>Thêm phòng</Button>
+            </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {rooms.map((room) => (
