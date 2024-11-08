@@ -46,6 +46,7 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                             setPaymentModal(true);
                             setOrder({
                                 bookingRequestId: row.id,
+                                base64: row.message_from_lessor,
                                 user: session?.user,
                                 priceMonth: row.price,
                                 deposit: row.deposit,
@@ -237,6 +238,7 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                             room_id: request.room.id,
                             price: request.room.price,
                             deposit: request.room.deposit,
+                            base64: request.message_from_lessor,
                         }}
                         headCells={headCells}
                     />

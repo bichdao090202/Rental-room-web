@@ -10,7 +10,6 @@ import { ModalCancelContract } from './ModalCancelContract';
 import { ModalOrder } from './ModalOrder';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import CustomFormControl from '@/common/components/FormControl';
-import { log } from 'console';
 import ModalThanhKhoan from './ModalThanhKhoan';
 import CustomModal from '@/common/components/modal';
 
@@ -178,9 +177,6 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                         setContractId(row.id);
                         setOrderModal(true);
                     }}> Xem hóa đơn</Button>
-
-
-
 
 
                     {

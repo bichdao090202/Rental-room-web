@@ -1,5 +1,5 @@
 'use client'
-import {Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography} from "@mui/material";
+import { Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography } from "@mui/material";
 import { PaymentInfo } from '../../app/api/payment/vnpay/create-payment-url/route';
 import { createRequestPayment } from "@/service/sub/create_request_payment";
 import { formatCurrency } from "@/common/utils/helpers";
@@ -9,6 +9,7 @@ import React from "react";
 import { userAction } from "@/common/store/user/users.actions";
 import { createTransaction } from "@/service/main/create_transaction";
 import { useTransactionStore } from "@/common/store/order/store";
+import { post } from "@/common/store/base.service";
 
 export const orderInit = {
     bookingRequestId: 0,
@@ -16,6 +17,7 @@ export const orderInit = {
     OrderDetails: [],
     deposit: 0,
     priceMonth: 0,
+    base64: '',
 }
 
 interface PaymentModalProps {
@@ -25,10 +27,11 @@ interface PaymentModalProps {
 
 export interface Order {
     bookingRequestId: number;
-    user:any;
+    user: any;
     OrderDetails?: OrderDetail[];
     deposit?: number;
     priceMonth: number;
+    base64?: string;
 }
 
 interface OrderDetail {
@@ -44,7 +47,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
     let total = 0;
     let orderDescription = '';
 
-    if(!order) return null;
+    if (!order) return null;
     if (order.deposit) {
         total = order.deposit + order.priceMonth;
         orderDescription = 'DEPOSIT,ROOM_CONTRACT';
@@ -142,16 +145,50 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                     }
                 </Box>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
-                    <Button variant="contained" sx={{ background: '#1976d2' }} onClick={() => {
-                        // const PaymentInfo = {
-                        //     amount: total / 100,
-                        //     // userId: order.userId,
-                        //     userId: order.bookingRequestId,
-                        //     orderDescription: orderDescription,
-                        // }
-                        // createRequestPayment(PaymentInfo);
-                        updateTransactionData(order, "DEPOSIT,ROOM_CONTRACT");
-                        createTransaction(order.bookingRequestId, "DEPOSIT,ROOM_CONTRACT", total/100, order);
+                    <Button variant="contained" sx={{ background: '#1976d2' }} onClick={ async() => {
+                        const body = {
+                            user_id: "083202010950_002",
+                            serial_number: "54010101b710e8055dcb29e10f1aa584",
+                            image_base64: "",
+                            rectangles: [
+                                {
+                                    number_page_sign: 1,
+                                    margin_top: 100,
+                                    margin_left: 100,
+                                    margin_right: 500,
+                                    margin_bottom: 100
+                                }
+                            ],
+                            visible_type: 0,
+                            contact: "",
+                            font_size: 12,
+                            sign_files: [
+                                {
+                                    data_to_be_signed: "c803ba9e0b741be5995687c3611ecea617d532f12d7bae81aad0fa5d6ffe3f23",
+                                    doc_id: "32c-7401-25621",
+                                    file_type: "pdf",
+                                    sign_type: "hash",
+                                    file_base64: order.base64
+                                }
+                            ]
+                        };
+
+                        const res = await post('http://54.253.233.87:8010/sign/sign_document', body,false);
+                        console.log(res);                        
+                        const signedData = res[0].signedData;
+                        console.log(signedData);
+                        if (!signedData) return;
+                        const newBody = {   
+                            booking_request_id: order.bookingRequestId,
+                            pay_for: 2,
+                            file_base64: signedData,
+                            file_name: `contract - ${order.bookingRequestId}`,
+                        }
+                        const resp = await post('contracts/booking',newBody);
+                        console.log(resp);
+
+                        // updateTransactionData(order, "DEPOSIT,ROOM_CONTRACT");
+                        // createTransaction(order.bookingRequestId, "DEPOSIT,ROOM_CONTRACT", total / 100, order);
                     }}>
                         Thanh toán
                     </Button>

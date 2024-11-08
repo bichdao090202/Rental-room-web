@@ -26,7 +26,6 @@ const items = [
         key: '/user/transaction',
         icon: Paid
     },
-
 ];
 
 export default function Template({ children }: { children: React.ReactNode }) {

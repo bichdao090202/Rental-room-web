@@ -85,9 +85,6 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>();
 
-  console.log(user?.balance);
-
-
   useEffect(() => {
     fetchTransactions();
     fetchBalance();
@@ -97,25 +94,10 @@ export default function Page() {
     try {
       const session = await getSession();
       if (!session) return;
-
-      // try {
-      //   const response = await axios.get(`http://54.253.233.87:3006/api/v1/users/${session.user.id}`, {
-      //     headers: {
-      //       Authorization: `${session.accessToken}`
-      //     }
-      //   });
-      //   const userData = response.data.data;
-      //   console.log(userData);
-      //   setUser(userData);
-      // } catch (error) {
-      //   console.error("Error fetching user data:", error);
-      // }
-      // setUser(session?.user);
       if (session?.user?.id) {
         const response = await get(`transactions?user_id=${session.user.id}`);
         const data: ApiResponse = response;
         if (data.status === "SUCCESS") {
-          // Sort transactions by id in descending order
           const sortedTransactions = data.data.sort((a, b) => b.id - a.id);
           setTransactions(sortedTransactions);
         }
@@ -205,7 +187,6 @@ export default function Page() {
               {transactions.map((transaction) => (
                 <TableRow key={transaction.id}>
                   <TableCell>{transaction.id}</TableCell>
-                  {/* <TableCell>{transaction.transaction_no}</TableCell> */}
                   <TableCell>
                     {formatDatetime(new Date(transaction.created_at))}
                   </TableCell>
@@ -234,7 +215,6 @@ export default function Page() {
             {selectedTransaction && (
               <Box sx={{ '& > *': { my: 1 } }}>
                 <Typography><strong>Mã giao dịch:</strong> {selectedTransaction.id}</Typography>
-                {/* <Typography><strong>Mã tra cứu:</strong> {selectedTransaction.transaction_no}</Typography> */}
                 <Typography>
                   <strong>Thời gian:</strong> {formatDatetime(new Date(selectedTransaction.created_at))}
                 </Typography>

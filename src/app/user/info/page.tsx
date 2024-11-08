@@ -42,15 +42,6 @@ export default function Home() {
     const fetchUser = async () => {
         const session = await getSession();
         if (!session) return;
-        //     const userData: UserData = {
-        //       email: "bichdao090202@gmail.com",
-        //       full_name: "Đào Thị Ngọc Bích",
-        //       id: 3,
-        //       identity_number: "",
-        //       img_url: "",
-        //       phone: "0905015625"
-        //     };
-        
         try {
             const response = await axios.get(`http://54.253.233.87:3006/api/v1/users/${session.user.id}`, {
                 headers: {

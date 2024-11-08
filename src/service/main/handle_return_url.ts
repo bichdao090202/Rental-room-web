@@ -37,7 +37,7 @@ export const handleReturnUrl = async (userId: number, transactionType: string, d
             description: 'DEPOSIT,ROOM_CONTRACT',
             transaction_no: `${data.vnp_TransactionNo}- ${orderData.contract_id}`,
         };
-        transactionResult = await post(`transactions`, newTrans);
+        // transactionResult = await post(`transactions`, newTrans);
 
         createContract(data, transactionResult.data.id);
         // if (transactionResult.status === "SUCCESS") {
@@ -91,12 +91,16 @@ const createContract = async (data: any, transId: number) => {
         renter_id: bookingRequest.renter_id,
         lessor_id: bookingRequest.lessor_id,
         room_id: bookingRequest.room_id,
-        date_rent: bookingRequest.start_date,
+        start_date: bookingRequest.start_date,
         monthly_price: bookingRequest.room.price,
         status: 2,
         file_base64: bookingRequest.message_from_lessor,
-        file_name: bookingRequest.room.title,
-        payment: bookingRequest.rental_duration,
+        // file_name: uuid_bookingRequestId hay gì cũng đc
+        rental_duration: bookingRequest.rental_duration,
+        title: bookingRequest.room.title,
+        deposit: bookingRequest.room.deposit,
+        borrowed_items: bookingRequest.room.borrowed_items,
+        services_history: bookingRequest.room.services,
     }
 
     console.log(bodyContract);
@@ -104,8 +108,8 @@ const createContract = async (data: any, transId: number) => {
     // const responseUpdateBookingRequest = await put(`booking-requests/${bodyBookingRequest.id}`, bodyBookingRequest);
     // console.log(responseUpdateBookingRequest);
 
-    // const responseCreateContract = await post(`contracts`, bodyContract);
-    // console.log(responseCreateContract);
+    const responseCreateContract = await post(`contracts`, bodyContract);
+    console.log(responseCreateContract);
 
     // const bodyOrder = {
     //     contract_id: responseCreateContract.data.id,
