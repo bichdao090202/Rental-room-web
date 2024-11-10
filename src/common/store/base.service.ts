@@ -120,7 +120,7 @@ export const signPost = async (
   console.log(`${process.env.NEXT_PUBLIC_API_URL_SIGN_GATEWAY}/${url}`);
   
     const response = await fetch(
-      `${process.env.SIGN_GATEWAY}/${url}` ,
+      `${process.env.NEXT_PUBLIC_API_URL_SIGN_GATEWAY}/${url}` ,
       {
         method: 'POST',
         headers: {

@@ -1,8 +1,7 @@
 'use client'
-
 import { get } from "@/common/store/base.service";
 import { formatCurrency } from "@/common/utils/helpers";
-import { Box, Button, Card, CardActions, CardContent, CardMedia, Container, Grid, Modal, Typography } from "@mui/material";
+import { Box, Button, Card, ButtonGroup, Tab, InputLabel, CardActions, CardContent, CardMedia, Stack, Paper, Container, Grid, Slider, Modal, Typography, MenuItem, Select, FormControl, Autocomplete, TextField, Chip } from "@mui/material";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
@@ -10,134 +9,215 @@ import { Room } from '../types/index';
 import { ModalOrder } from "@/component/ContractsList/ModalOrder";
 import { Add } from "@mui/icons-material";
 import AddressSelector from "@/component/AddressSelector";
+import RoomCard from "@/component/RoomCard";
+import SearchIcon from "@/component/icons/SearchIcon";
+import theme from "@/styles/theme";
 
-interface Address {
-  city: string;
-  district: string;
-  ward: string;
-  detail: string;
+interface PriceRange {
+  min: number;
+  max: number;
 }
+
+const ROOM_TYPES = [
+  { value: 'apartment', label: 'Căn hộ' },
+  { value: 'room', label: 'Phòng trọ' },
+  { value: 'dormitory', label: 'KTX' },
+  { value: 'house', label: 'Nhà nguyên căn' },
+];
+
+const GENDER_OPTIONS = [
+  { value: 'both', label: 'Tất cả' },
+  { value: 'male', label: 'Nam' },
+  { value: 'female', label: 'Nữ' },
+];
+
 
 
 export default function Home() {
   const router = useRouter();
-
-  const mockRooms = [
-    {
-      id: 1,
-      title: "Căn hộ cho thuê giá rẻ",
-      type: 2,
-      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQI3poe0CGMok1sqDPSkHL74DJs3eG8ASb2Ew&s",
-      address: {
-        city: "TP.HCM",
-        district: "Gò Vấp",
-        ward: "phường 4",
-        detail: "số 9 Nguyễn Văn Nghi",
-      },
-      utilities: [1, 2, 3, 4],
-      price: 3000000,
-      deposit: 3000000,
-      gender: 0,
-      roomSize: 20,
-      owner_id: 1,
-      description: "Nhà rộng 10x20m, 3 phòng ngủ...",
-    },
-    {
-      id: 2,
-      title: "Phòng trọ tiện nghi",
-      type: 1,
-      image: "https://xaydungthuanphuoc.com/wp-content/uploads/2022/09/mau-phong-tro-co-gac-lung-dep2022-5.jpg",
-      address: {
-        city: "TP.HCM",
-        district: "Bình Thạnh",
-        ward: "phường 12",
-        detail: "số 10 Điện Biên Phủ",
-      },
-      utilities: [1, 2],
-      price: 40000000,
-      deposit: 2000,
-      gender: 1,
-      roomSize: 15,
-      owner_id: 2,
-      description: "Phòng trọ đầy đủ tiện nghi, gần trung tâm...",
-    },
-  ];
   const [rooms, setRooms] = useState<Room[]>([])
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [roomType, setRoomType] = useState('all');
+  const [gender, setGender] = useState('both');
+  const [priceRange, setPriceRange] = useState<PriceRange>({ min: 0, max: 10000000 });
+
+  const [filters, setFilters] = useState({
+    roomType: 'all',
+    gender: 'both',
+    priceRange: { min: 0, max: 10000000 }
+  });
 
   
-  // const [orderModal, setOrderModal] = useState(true);
-
-//   const handleOrderModal = () => {
-//     setOrderModal(false);
-// };
 
   useEffect(() => {
     const fetchRooms = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const response = await get(`rooms?page_id=1&per_page=-1`)
-        const result = response.data;
-        console.log(result);
-        setRooms(result);
+        const response = await get(`rooms?page_id=1&per_page=-1`);
+        setRooms(response.data);
       } catch (error) {
+        setError('Failed to fetch rooms. Please try again later.');
         console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchRooms();
   }, []);
-  return (
-    <Box
-      component="section"
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        width: '100%',
 
+  const handleRoomClick = (id: number) => {
+    router.push(`/room/${id}`);
+  };
+
+  return (
+    <Box component="section" sx={{  display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", width: '100%' }}>
+      <Container
+        maxWidth="xl"
+        sx={{
+          px: { xs: 1, sm: 2, md: 3 },
+          py: { xs: 2, md: 4 }
+        }}
+      >
+        <Card
+      sx={{
+        mb: 4,
+        borderRadius: 2,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        transition: 'transform 0.2s',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+        }
       }}
     >
-      <Container sx={{ py: 4, width: '100%' }}>
-        <AddressSelector />
-        <Grid container spacing={4}>
-          {rooms.map((room) => (
-            <Grid item key={room.id} xs={12} sm={6} md={4} lg={3}>
-              <Card sx={{ maxWidth: 500, cursor: 'pointer', }} onClick={() => { router.push(`/room/${room.id}`) }}>
+      <CardContent>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            Tìm phòng trọ
+          </Typography>
+          
+        </Box>
 
-                <CardMedia
-                  component="img"
-                  sx={{
-                    width: '100%',
-                    height: 200,
-                    objectFit: 'cover'
-                  }}
-                  image={room.images[0]}
-                  alt={room.title}
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h6" component="div"
-                    sx={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      display: 'block',
-                    }}>
-                    {room.title}
-                  </Typography>
-                  <Typography gutterBottom variant="h6" component="div" color="orange">
-                    {formatCurrency(room.price)}
-                  </Typography>
-                  {/* <Typography variant="body2" color="text.secondary">
-                    Địa chỉ: {`${room.address.detail}, ${room.address.ward}, ${room.address.district}, ${room.address.city}`}
-                  </Typography> */}
 
-                </CardContent>
+        <Stack spacing={3}>
 
-              </Card>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2, mb: 2,justifyContent: 'space-between'  }}>
+
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+        <Typography variant="h6" gutterBottom>
+        Địa chỉ:
+          </Typography>
+
+  <AddressSelector />
+</Box>
+
+          <FormControl sx={{ minWidth: 250 }}>
+            <InputLabel>Loại phòng</InputLabel>
+            <Select
+              value={filters.roomType}
+              label="Loại phòng"
+              onChange={(e) => setFilters({ ...filters, roomType: e.target.value })}
+            >
+              <MenuItem value="all">Tất cả loại phòng</MenuItem>
+              {ROOM_TYPES.map(type => (
+                <MenuItem key={type.value} value={type.value}>
+                  {type.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ minWidth: 180 }}>
+            <InputLabel>Giới tính</InputLabel>
+            <Select
+              value={filters.gender}
+              label="Giới tính"
+              onChange={(e) => setFilters({ ...filters, gender: e.target.value })}
+            >
+              {GENDER_OPTIONS.map(type => (
+                <MenuItem key={type.value} value={type.value}>
+                  {type.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<SearchIcon />}
+            sx={{
+              background: theme.palette.primary.main,
+              color: 'white',
+              height:"50px",
+              width: "100px"
+              // '&:hover': {
+              //   background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)',
+              // }
+            }}
+          >
+          </Button>
+</Box>
+
+        
+
+          {/* <Box>
+            <Typography variant="subtitle2" gutterBottom>
+              Khoảng giá (triệu đồng)
+            </Typography>
+            <Box sx={{ px: 2 }}>
+              <Slider
+                value={[filters.priceRange.min, filters.priceRange.max]}
+                onChange={(_, newValue) => {
+                  if (Array.isArray(newValue)) { 
+                    setFilters(prevFilters => ({ 
+                      ...prevFilters, 
+                      priceRange: { min: newValue[0], max: newValue[1] }
+                    }));
+                  }
+                }}
+                valueLabelDisplay="auto"
+                min={0}
+                max={10000000}
+                step={500000}
+                valueLabelFormat={(value) => `${(value/1000000).toFixed(1)}tr`}
+              />
+            </Box>
+          </Box> */}
+
+          
+        </Stack>
+      </CardContent>
+    </Card>
+
+
+
+        <Typography variant="h5" sx={{ mb: 3 }}>Phòng trọ nổi bật</Typography>
+        <Grid
+          container
+          spacing={{ xs: 1, sm: 2, md: 3 }}
+          sx={{ mb: 6 }}
+        >
+          {rooms.slice(0, 4).map((room) => (
+            <Grid item xs={12} sm={6} md={3} key={room.id}>
+              <RoomCard room={room} onClick={(id) => router.push(`/room/${id}`)} />
             </Grid>
           ))}
         </Grid>
 
-        {/* <ModalOrder onClose={handleOrderModal} contractId={21} /> */}
+        <Typography variant="h5" sx={{ mb: 3 }}>Gần chỗ bạn</Typography>
+        <Grid
+          container
+          spacing={{ xs: 1, sm: 2, md: 2.5 }}
+        >
+          {rooms.map((room) => (
+            <Grid item xs={12} sm={6} md={3} key={room.id}>
+              <RoomCard room={room} onClick={(id) => router.push(`/room/${id}`)} />
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     </Box>
   );

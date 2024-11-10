@@ -113,9 +113,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                             </Select>
                         </FormControl>
                     </Box>
-                    {/* <Typography >
-                        Họ tên: {order?.user?.full_name}
-                    </Typography> */}
 
                     <Divider sx={{ my: 2 }} />
                     <Typography component="h2" sx={{ fontWeight: 'bold' }} >
@@ -173,6 +170,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                             ]
                         };
 
+                        console.log(body);      
+
+
                         const res = await post('http://54.253.233.87:8010/sign/sign_document', body,false);
                         console.log(res);                        
                         const signedData = res[0].signedData;
@@ -182,11 +182,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                             booking_request_id: order.bookingRequestId,
                             pay_for: 2,
                             file_base64: signedData,
-                            file_name: `contract - ${order.bookingRequestId}`,
+                            file_name: `contract-${order.bookingRequestId}`,
                         }
-                        const resp = await post('contracts/booking',newBody);
+                        const resp = await post('contracts/booking',newBody);                        
                         console.log(resp);
+                        if (resp.status=="SUCCESS") {
+                            alert("Tạo hợp đồng thành công");                            
+                        } else {
+                            alert("Tạo hợp đồng thất bại, thủ lại sau");
+                        }
 
+                        onClose();
                         // updateTransactionData(order, "DEPOSIT,ROOM_CONTRACT");
                         // createTransaction(order.bookingRequestId, "DEPOSIT,ROOM_CONTRACT", total / 100, order);
                     }}>

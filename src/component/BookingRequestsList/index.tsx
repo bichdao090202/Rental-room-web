@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Box, Button, Stack, CircularProgress, Modal, FormControl, Select, MenuItem } from '@mui/material';
 import SmallCard, { HeadCell } from '@/common/components/card/SmallCard';
-import { get, put } from '@/common/store/base.service';
+import { get, post, put, signPost } from '@/common/store/base.service';
 import { BookingRequest, Room } from '@/types';
 import { useRouter } from 'next/navigation';
 
@@ -20,6 +20,7 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
     const [paymentModal, setPaymentModal] = useState(false);
     const [order, setOrder] = useState<Order>(orderInit);
     const { data: session } = useSession();
+    
 
     //for lessor
     const [open, setOpen] = useState(false);
@@ -58,7 +59,6 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                                     }
                                 ]
                             });
-                            console.log(row.id);
                         }}>Thanh toán</Button>
                     )}
 
@@ -150,7 +150,6 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
     };
 
     const updateBookingRequest = async (basa64: any) => {
-        console.log('Bắt đầu update booking request, chuẩn bị dữ liệu');
         if (!selectedRequest) return;
 
         const updatedRequest = {
@@ -158,9 +157,8 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
             note: "Waiting for renter to sign and pay",
             message_from_lessor: basa64!,
         };
-        console.log('Đã chuẩn bị dữ liệu xong, bắt đầu gửi yêu cầu put');
         const res = await put(`booking-requests/${selectedRequest.id}`, updatedRequest);
-        console.log('Xong, trả về kết quả, update ui');
+        console.log(res);
         setBookingRequests(bookingRequests =>
             bookingRequests.map(obj => obj.id === selectedRequest.id ? res.data : obj)
         );
@@ -168,25 +166,43 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
 
     const handleSignDoc = async (fileBase64: string) => {
         const body = {
-            userId: "083202010950",
-            checkCertValid: true,
-            serialNumber: "5404fffeb7033fb316d672201beb028e",
-            dataDisplay: "Sign document",
-            fileSignedResponseType: 1,
-            docID: 131,
-            fileBase64: fileBase64,
-            timestampConfig: {
-                useTimestamp: false,
-                tsa_url: "",
-                tsa_acc: "",
-                tsa_pass: ""
-            },
-            displayImageConfigBO: {
-                fileImageBase64: process.env.NEXT_PUBLIC_FILE_IMAGE_BASE64,
-                widthRectangle: 100
-            }
+            user_id: "083202010950_002",
+            serial_number: "54010101b710e8055dcb29e10f1aa584",
+            image_base64: "",
+            rectangles: [
+                {
+                    number_page_sign: 1,
+                    margin_top: 100,
+                    margin_left: 100,
+                    margin_right: 500,
+                    margin_bottom: 100
+                }
+            ],
+            visible_type: 0,
+            contact: "",
+            font_size: 12,
+            sign_files: [
+                {
+                    data_to_be_signed: "c803ba9e0b741be5995687c3611ecea617d532f12d7bae81aad0fa5d6ffe3f23",
+                    doc_id: "32c-7401-25621",
+                    file_type: "pdf",
+                    sign_type: "hash",
+                    file_base64: fileBase64
+                }
+            ]
+        };
+        console.log(body)
+        try {
+            const res = await post('http://54.253.233.87:8010/sign/sign_document', body,false);
+            console.log(res)
+            const file = base64ToFile(res[0].signedData, "DocumentSigned.pdf");
+            updateBookingRequest(res[0].signedData);
+        } catch {
+            alert('Lỗi, thử lại sau')
+            router.push('manager/lessor/booking-request')
         }
-        console.log('Đã chuẩn bị xong dữ liệu');
+
+    
         // const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
         //     method: "POST",
         //     headers: {
@@ -203,8 +219,8 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
         // } else {
         //     console.error("Server error");
         // }
-        const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
-        updateBookingRequest(fileBase64);
+        // const file = base64ToFile(fileBase64, "DocumentSigned.pdf");
+        // updateBookingRequest(fileBase64);
     };
 
     if (loadingPage) {

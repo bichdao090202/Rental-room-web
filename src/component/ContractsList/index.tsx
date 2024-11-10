@@ -104,6 +104,9 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                 return "Đang xử lý";
             case 2:
                 return "Đang có hiệu lực";
+
+                case 8:
+                return "Đã thanh khoản";
             case 3:
                 return "Đã kết thúc";
             case 4:
@@ -178,7 +181,6 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                         setOrderModal(true);
                     }}> Xem hóa đơn</Button>
 
-
                     {
                         !isLastMonth(row.start_date, row.rental_duration) && row.canceled_by == null && row.status == "Đang có hiệu lực" && 
                         <Button variant="contained" color="error" onClick={() => {
@@ -192,24 +194,24 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
 
 
                     {
-                        isLastMonth(row.start_date, row.rental_duration) && row.status == "Đang có hiệu lực" &&
-                        type === 'renter' && row.status != "Đang chờ thanh khoản" &&
+                        // isLastMonth(row.start_date, row.rental_duration) && row.status == "Đang có hiệu lực" &&
+                        type === 'renter' && row.status != "Đang chờ thanh khoản" && row.status != "Đã thanh khoản" &&
                         <Button variant="contained" color="warning" onClick={async () => {
                             // setOpenAlert(true);
                             // setMessage("Bạn thật sự muốn thanh khoản hợp đồng này?")
                             thanhKhoan(row)
-                        }}>Thanh khoản</Button>
+                        }}>Thanh lý</Button>
                     }
 
 {
                         type === 'renter' && row.status == "Đang chờ thanh khoản" && 
                         <Button variant="contained" color="warning" onClick={async () => {
                             setOpenAlert(true);
-                            setMessage("Bạn đã gửi yêu cầu thanh khoản, vui lòng chờ chủ nhà xác nhận")
+                            setMessage("Bạn đã gửi yêu cầu thanh lý, vui lòng chờ chủ nhà xác nhận")
                             // setContractId(row.id);
                             // setThanhKhoanModal(true);
                         }}>
-                            <i>Chờ thanh khoản</i>
+                            <i>Chờ thanh lý</i>
                         </Button>
                     }
 
@@ -221,7 +223,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             setContractId(row.id);
                             setThanhKhoanModal(true);
                         }}>
-                            Đã thanh khoản
+                            Đã thanh lý
                         </Button>
                     }
 
@@ -232,7 +234,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             setContractId(row.id);
                             setThanhKhoanModal(true);
                         }}>
-                            Chờ thanh khoản
+                            Chờ thanh lý
                         </Button>
                     }
 
@@ -339,7 +341,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             status: getStatusText(request.status),
                             note: request.note,
                             date_rent: request.date_rent,
-                            rental_duration: request.payment,
+                            
                             message_from_renter: request.message_from_renter,
                             message_from_lessor: request.message_from_lessor,
                             id: request.id,
@@ -353,6 +355,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             pay_mode: request.pay_mode,
                             file_path: request.file_path,
                             start_date: request.start_date,
+                            rental_duration: request.rental_duration,
                         }}
                         headCells={headCells}
                     />

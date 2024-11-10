@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextField, Button, CircularProgress, Box, MenuItem, Alert } from '@mui/material';
-import { signPost } from '@/common/store/base.service';
+import { signPost, post } from '@/common/store/base.service';
 import CustomModal from '@/common/components/modal';
 
 interface DigitalSignatureForm {
@@ -40,7 +40,8 @@ export const AddSignatureModal = ({ open, onClose, onSuccess, userId }: Props) =
                 provider: signatureForm.provider,
                 user_id: signatureForm.userId
             };
-            const response = await signPost('get_certificate', body);
+            console.log(body);
+            const response = await post('http://54.253.233.87:8010/sign/get_certificate', body,false);
             console.log(response);
             setIsSignatureValid(true);
         } catch (error) {

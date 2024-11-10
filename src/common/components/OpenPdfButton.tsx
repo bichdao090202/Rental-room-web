@@ -19,9 +19,15 @@ const base64ToFile = (base64: string, filename: string): File => {
   }
 };
 
-// Hàm để mở PDF trong tab mới
+
 const openPdfInNewTab = (file: File) => {
   const fileUrl = URL.createObjectURL(file);
+  const a = document.createElement('a');  
+  a.href = fileUrl;
+  a.download = file.name;  
+  document.body.appendChild(a); 
+  a.click();  
+  document.body.removeChild(a);
   const newTab = window.open(fileUrl, '_blank');
   if (newTab) {
     newTab.focus();
