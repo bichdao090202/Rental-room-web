@@ -19,6 +19,29 @@ interface FormInputs {
     date: string;
 }
 
+export function getContractStatus(status: number): string {
+    switch (status) {
+        case 1:
+            return "Đang xử lý";
+        case 2:
+            return "Đang có hiệu lực";
+        case 3:
+            return "Đã kết thúc";
+        case 4:
+            return "Thất bại";
+        case 5:
+            return "Hủy một phía";
+        case 6:
+            return "Hủy đồng thuận";
+        case 7:
+            return "Đang chờ thanh khoản";
+        case 8:
+            return "Đã thanh khoản";
+        default:
+            return "Trạng thái không xác định";
+    }
+}
+
 export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     const [bookingRequests, setBookingRequests] = useState<any[]>([]);
     const router = useRouter();
@@ -82,45 +105,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
             alert("Thao tác thất bại, vui lòng thử lại")
     };
 
-    function getStatusText(status: number) {
-        switch (status) {
-            // case 1:
-            //     return 'Processing';
-            // case 2:
-            //     return 'Active';
-            // case 3:
-            //     return 'Finished';
-            // case 4:
-            //     return 'Failure';
-            // case 5:
-            //     return 'One-side cancel';
-            // case 6:
-            //     return 'Agreed cancel';
-            // case 7:
-            //     return 'Đang chờ thanh khoản';
-            // default:
-            //     return 'Unknown status';
-            case 1:
-                return "Đang xử lý";
-            case 2:
-                return "Đang có hiệu lực";
 
-                case 8:
-                return "Đã thanh khoản";
-            case 3:
-                return "Đã kết thúc";
-            case 4:
-                return "Thất bại";
-            case 5:
-                return "Hủy một phía";
-            case 6:
-                return "Hủy đồng thuận";
-            case 7:
-                return "Đang chờ thanh khoản";
-            default:
-                return "Trạng thái không xác định";
-        }
-    }
 
     function isLastMonth(startDate: Date, rentalDuration: number) {
         const start = new Date(startDate);
@@ -156,19 +141,13 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
         { id: 'status', label: 'Trạng thái' },
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
-        // { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
         { id: 'monthly_price', label: 'Giá mỗi tháng' },
         { id: 'deposit', label: 'Tiền cọc' },
         {
             id: 'action', label: "Action",
             render: (row) =>
             (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {row.note == "Waiting for renter to sign and pay" && (
-                        <Button variant="contained" color="primary" onClick={() => {
-                            setPaymentModal(true);
-                        }}>Thanh toán</Button>
-                    )}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>                    
 
                     <Button variant="contained" color="primary" onClick={() => {
                         window.open(row.file_path, '_blank');
@@ -182,7 +161,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     }}> Xem hóa đơn</Button>
 
                     {
-                        !isLastMonth(row.start_date, row.rental_duration) && row.canceled_by == null && row.status == "Đang có hiệu lực" && 
+                        !isLastMonth(row.start_date, row.rental_duration) && row.canceled_by == null && row.status == "Đang có hiệu lực" &&
                         <Button variant="contained" color="error" onClick={() => {
                             setContractId(row.id);
                             setTypeModal('cancel');
@@ -194,17 +173,17 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
 
 
                     {
-                        // isLastMonth(row.start_date, row.rental_duration) && row.status == "Đang có hiệu lực" &&
+                        isLastMonth(row.start_date, row.rental_duration) && row.status == "Đang có hiệu lực" &&
                         type === 'renter' && row.status != "Đang chờ thanh khoản" && row.status != "Đã thanh khoản" &&
                         <Button variant="contained" color="warning" onClick={async () => {
-                            // setOpenAlert(true);
-                            // setMessage("Bạn thật sự muốn thanh khoản hợp đồng này?")
+                            setOpenAlert(true);
+                            setMessage("Bạn thật sự muốn thanh khoản hợp đồng này?")
                             thanhKhoan(row)
                         }}>Thanh lý</Button>
                     }
 
-{
-                        type === 'renter' && row.status == "Đang chờ thanh khoản" && 
+                    {
+                        type === 'renter' && row.status == "Đang chờ thanh khoản" &&
                         <Button variant="contained" color="warning" onClick={async () => {
                             setOpenAlert(true);
                             setMessage("Bạn đã gửi yêu cầu thanh lý, vui lòng chờ chủ nhà xác nhận")
@@ -216,10 +195,8 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     }
 
                     {
-                        type === 'renter' && row.status == "Đã kết thúc" && 
+                        type === 'renter' && row.status == "Đã kết thúc" &&
                         <Button variant="contained" color="warning" onClick={async () => {
-                            // setOpenAlert(true);
-                            // setMessage("Bạn đã gửi yêu cầu thanh khoản, vui lòng chờ chủ nhà xác nhận")
                             setContractId(row.id);
                             setThanhKhoanModal(true);
                         }}>
@@ -240,7 +217,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
 
 
                     {
-                        row.canceled_by == session?.user.id && row.pay_mode == 5 &&
+                        row.canceled_by == session?.user.id && row.cancel_status == 1 &&
                         <Button variant="outlined" color="primary" onClick={() => {
                             setContractId(row.id);
                             setTypeModal('cancel');
@@ -251,7 +228,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     }
 
                     {
-                        row.canceled_by != session?.user.id && row.pay_mode == 5 &&
+                        row.canceled_by != session?.user.id && row.cancel_status == 1 &&
                         <Button variant="contained" color="primary" onClick={async () => {
                             setContractId(row.id);
                             setTypeModal('handle');
@@ -262,7 +239,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     }
 
                     {
-                        row.canceled_by != null && row.canceled_by == session?.user.id && row.pay_mode == 6 &&
+                        row.canceled_by != null && row.canceled_by == session?.user.id && row.cancel_status == 2 &&
                         <Button variant="contained" color="primary" onClick={() => {
                             setContractId(row.id);
                             setTypeModal('confirm');
@@ -284,9 +261,6 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                         }}> Gia hạn
                         </Button>
                     }
-
-
-
                 </Box>
             )
         }
@@ -338,10 +312,10 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                         dataSource={{
                             image: request.room.images?.[0] || '',
                             title: request.room.title,
-                            status: getStatusText(request.status),
+                            status: getContractStatus(request.status),
                             note: request.note,
                             date_rent: request.date_rent,
-                            
+
                             message_from_renter: request.message_from_renter,
                             message_from_lessor: request.message_from_lessor,
                             id: request.id,
@@ -356,6 +330,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                             file_path: request.file_path,
                             start_date: request.start_date,
                             rental_duration: request.rental_duration,
+                            cancel_status: request.cancel_status,
                         }}
                         headCells={headCells}
                     />

@@ -6,6 +6,7 @@ import { get, put } from "@/common/store/base.service";
 import Loading from "@/app/loading";
 import { Contract } from "@/types";
 import { createTransaction } from "@/service/main/create_transaction";
+import { getContractStatus } from ".";
 
 interface PaymentModalProps {
     onClose: () => void;
@@ -27,24 +28,6 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
         }
     };
 
-    function getStatusText(status: number) {
-        switch (status) {
-            case 1:
-                return 'Processing';
-            case 2:
-                return 'Active';
-            case 3:
-                return 'Finished';
-            case 4:
-                return 'Failure';
-            case 5:
-                return 'One-side cancel';
-            case 6:
-                return 'Agreed cancel';
-            default:
-                return 'Unknown status';
-        }
-    }
 
     useEffect(() => {
         fetchContracts();
@@ -91,7 +74,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                     </Typography>
 
                     <Typography  >
-                        Trạng thái: {getStatusText(contract.status)}
+                        Trạng thái: {getContractStatus(contract.status)}
                     </Typography>
 
                     <Typography  >
@@ -138,7 +121,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                             const body = {
                                 ...contract,
                                 canceled_by: session?.user.id,
-                                pay_mode: 5,
+                                cancel_status: 1,
                                 renter_id: contract?.renter.id,
                                 lessor_id: contract?.lessor.id,
                                 room_id: contract?.room!.id
@@ -160,7 +143,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         <Button variant="contained" sx={{ background: 'primary' }} onClick={async () => {
                             const body = {
                                 ...contract,
-                                pay_mode: 2,
+                                cancel_status: 3,
                                 status: 5,
                                 renter_id: contract?.renter.id,
                                 lessor_id: contract?.lessor.id,
@@ -177,7 +160,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         <Button variant="contained" onClick={async () => {
                             const body = {
                                 ...contract,
-                                pay_mode: 2,
+                                cancel_status: 0,
                                 canceled_by: null,
                                 renter_id: contract?.renter.id,
                                 lessor_id: contract?.lessor.id,
@@ -198,7 +181,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                             const session = await getSession();
                             const body = {
                                 ...contract,
-                                pay_mode: 2,
+                                cancel_status: 3,
                                 status: 6,
                                 renter_id: contract?.renter.id,
                                 lessor_id: contract?.lessor.id,
@@ -216,7 +199,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         <Button variant="contained" onClick={async () => {
                             const body = {
                                 ...contract,
-                                pay_mode: 6,
+                                cancel_status: 2,
                                 renter_id: contract?.renter.id,
                                 lessor_id: contract?.lessor.id,
                                 room_id: contract?.room!.id,
