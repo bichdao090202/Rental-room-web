@@ -7,6 +7,7 @@ export interface HeadCell {
     id: string;
     label: string;
     render?: (value: any) => React.ReactNode;
+    type?: 'string' | 'number' | 'date' | 'render';
 }
 
 interface SmallCardProps {
@@ -49,12 +50,21 @@ const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonCl
                 <Typography variant="h6" sx={{ mb: 1, textAlign: 'left' }}>{dataSource.title}</Typography>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, p: 0 }}>
                     {headCells.map((cell) => (
-                        cell.render ? "" :
+                        // cell.render ? "" :
                             <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                                 <Typography variant="body2" sx={{ mr: 1 }}>
                                     {/* {cell.label}: {isNaN(Date.parse(dataSource[cell.id])) ? dataSource[cell.id] : new Date(dataSource[cell.id]).toLocaleDateString()} */}
-                                    {cell.label}:  {formatValue(dataSource[cell.id])}
-                            
+                                    {cell.label + ': '}  
+
+                                    {!cell.render && !cell.type  && formatValue(dataSource[cell.id])}
+
+                                    {
+                                        cell.type === 'render' && cell.render(dataSource) 
+                                    }
+
+
+                                    
+
                                 </Typography>
                                 <Typography variant="body2">
                                 </Typography>
@@ -65,7 +75,7 @@ const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonCl
             <CardActions sx={{ display: 'flex', flexDirection: 'column', width: '20%', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                 {headCells.map((cell) => (
                     <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'center' }}>
-                        {cell.render ? cell.render(dataSource) : ""}
+                        {cell.render && cell.type!='render' ? cell.render(dataSource) : ""}
                     </Box>
                 ))}
             </CardActions>

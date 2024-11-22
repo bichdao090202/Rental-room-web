@@ -86,6 +86,7 @@ export interface Contract {
   chargeableServices?: ChargeableService[];
   pdfPath: string;
   invoices: any;
+  start_date: Date;
 
 }
 

@@ -19,12 +19,11 @@ const base64ToFile = (base64: string, filename: string): File => {
   }
 };
 
-
 const openPdfInNewTab = (file: File) => {
   const fileUrl = URL.createObjectURL(file);
   const a = document.createElement('a');  
   a.href = fileUrl;
-  a.download = file.name;  
+  // a.download = file.name;  
   document.body.appendChild(a); 
   a.click();  
   document.body.removeChild(a);
@@ -43,7 +42,6 @@ interface PdfViewerButtonProps {
 const OpenPdfButton: React.FC<PdfViewerButtonProps> = ({ fileBase64, filename }) => {
   const handleClick = () => {
     try {
-      console.log(fileBase64);
       const file = base64ToFile(fileBase64, filename);
       openPdfInNewTab(file);
     } catch (error) {

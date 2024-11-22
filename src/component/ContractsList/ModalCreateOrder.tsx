@@ -1,11 +1,10 @@
 'use client'
 import { Box, Button, Divider, Grid, Modal, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, Typography, Alert } from "@mui/material";
-import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { get, put } from "@/common/store/base.service";
+import { get, post, put } from "@/common/store/base.service";
 import Loading from "@/app/loading";
-import { useTransactionStore } from "@/common/store/order/store";
-import { createRequestPayment } from "@/service/sub/create_request_payment";
+import CustomModal from "@/common/components/modal";
+import { formatCurrency } from "@/common/utils/helpers";
 
 interface PaymentModalProps {
     onClose: () => void;
@@ -27,9 +26,8 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
     const [quantities, setQuantities] = useState<Record<number, number>>({});
     const [month, setMonth] = useState<number>(0);
     const [error, setError] = useState<string>("");
-    const updateTransactionData = useTransactionStore((state) => state.updateData);
-    const data = useTransactionStore((state) => state.type);
-    console.log(data);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('')
 
     const handleQuantityChange = (id: number, value: string) => {
         const quantity = value ? parseInt(value) : 0;
@@ -37,13 +35,13 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             ...prev,
             [id]: quantity,
         }));
-        setError(""); // Clear error when user starts typing
+        setError("");
     };
 
     const totalAmount = contract?.services_history.reduce((total: any, service: any) => {
         const quantity = quantities[service.id] || 0;
         return total + service.price * quantity;
-    }, 0);
+    }, contract.deposit);
 
     const fetchContracts = async () => {
         try {
@@ -90,25 +88,20 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
         const orderData = {
             contract_id: contractId,
             amount: totalAmount,
-            transaction_id: 1, 
+            transaction_id: 1,
             at_month: month,
             start_date: new Date().toISOString(),
             service_demands: serviceDemands
         };
 
-        updateTransactionData(orderData, 'CREATE_ORDER');
+        const invoiceBody = {
+            ...orderData,
+            transaction_id: 178
+        };
 
-        try {
-            await createRequestPayment({
-                userId: contract.user_id,
-                amount: totalAmount/100,
-                orderDescription: `Thanh toán hóa đơn tháng ${month}`
-            });
-            onClose();
-        } catch (error) {
-            console.error('Error processing payment:', error);
-            setError("Có lỗi xảy ra khi xử lý thanh toán");
-        }
+        const invoice = await post('invoices', invoiceBody);
+        setModalMessage('Tạo hóa đơn thành công');
+        setShowSuccessModal(true);
     };
 
     if (!contract) {
@@ -128,8 +121,9 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: '70vw',
-                    height: '800px',
+                    width: '700px',
+                    height: 'auto',
+                    maxHeight: '850px',
                     bgcolor: 'background.paper',
                     boxShadow: 24,
                     p: 4,
@@ -161,13 +155,31 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Tên dịch vụ</TableCell>
-                                <TableCell align="right">Đơn giá</TableCell>
-                                <TableCell align="right">Số lượng</TableCell>
+                                <TableCell style={{ width: '30%'}}>Tên dịch vụ</TableCell>
+                                <TableCell  align="right">Đơn giá</TableCell>
+                                <TableCell style={{ width: '25%', minWidth: '150px' }} align="right">Số lượng</TableCell>
                                 <TableCell align="right">Thành tiền</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
+                            <TableRow>
+                                <TableCell>Tiền thuê tháng</TableCell>
+                                <TableCell align="right">
+                                    {formatCurrency(contract.deposit)}
+                                </TableCell>
+                                <TableCell align="right">
+                                    <TextField
+                                        type="number"
+                                        size="small"
+                                        value={1}
+                                        disabled
+                                    />
+                                </TableCell>
+                                <TableCell align="right">
+                                    {formatCurrency(contract.deposit)}
+                                </TableCell>
+                            </TableRow>
+
                             {contract.services_history.map((service: any) => (
                                 <TableRow key={service.id}>
                                     <TableCell>{service.service_name}</TableCell>
@@ -189,6 +201,7 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
                                     </TableCell>
                                 </TableRow>
                             ))}
+
                             <TableRow>
                                 <TableCell colSpan={4} sx={{ borderBottom: 'none' }}>
                                     <Box sx={{ borderTop: '1px solid rgba(224, 224, 224, 1)', mt: 2, pt: 2 }}>
@@ -205,14 +218,24 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
                 <Divider sx={{ mb: 2 }} />
 
                 <Box sx={{ mb: 2 }}>
-                    <Button 
-                        variant="contained" 
+                    <Button
+                        variant="contained"
                         sx={{ width: '100%' }}
                         onClick={handleCreateOrder}
                     >
                         Tạo hóa đơn
                     </Button>
                 </Box>
+
+                <CustomModal
+                    open={showSuccessModal}
+                    onClose={() => setShowSuccessModal(false)}
+                    title="Thông báo"
+                    type="confirm"
+                    onConfirm={() => setShowSuccessModal(false)}
+                >
+                    <Typography>{modalMessage}</Typography>
+                </CustomModal>
             </Box>
         </Modal>
     );

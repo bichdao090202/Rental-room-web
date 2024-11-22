@@ -14,13 +14,31 @@ import { base64ToFile, getBase64FromPdf } from '@/common/utils/helpers';
 import PdfUploader from '@/common/components/PdfUploader';
 import LoadingBox from '@/common/components/LoadingBox';
 
+export function getBookingStatus(status: number): string {
+    switch (status) {
+        case 0: 
+            return "ahjgkay"
+        case 1:
+            return "Đang chờ chủ trọ đồng ý";
+        case 2:
+            return "Đang chờ người thuê thanh toán";
+        case 3:
+            return "Hoàn thành";
+        case 4:
+            return "Chủ trọ từ chối";
+        case 5:
+            return "Người thuê hủy";
+        default:
+            return "Không xác định";
+    }
+}
+
 export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor' }) {
     const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
     const router = useRouter();
     const [paymentModal, setPaymentModal] = useState(false);
     const [order, setOrder] = useState<Order>(orderInit);
     const { data: session } = useSession();
-    
 
     //for lessor
     const [open, setOpen] = useState(false);
@@ -31,12 +49,13 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const headCells: HeadCell[] = [
-        { id: 'status', label: 'Trạng thái' },
-        // { id: 'note', label: 'Ghi chú' },
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
         { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
         { id: 'price', label: 'Giá' },
+        {
+            id: 'status', label: "Trạng thái", type: 'render', render: (row) => getBookingStatus(row.status)
+        },
         {
             id: 'action', label: "Action",
             render: (row) =>

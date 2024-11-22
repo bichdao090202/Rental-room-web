@@ -89,10 +89,10 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
                         Mã hợp đồng(ID): {contractId}
                     </Typography>
                     <Typography  >
-                        Giá phòng: {contract.monthly_price}
+                        Giá phòng: {formatCurrency(contract.monthly_price)}
                     </Typography>
                     <Typography  >
-                        Ngày bắt đầu: {formatDay(new Date(contract.date_rent))}
+                        Ngày bắt đầu: {formatDay(new Date(contract.start_date))}
                     </Typography>
                     <Typography  >
                         Thời gian thuê: {contract.payment} tháng
