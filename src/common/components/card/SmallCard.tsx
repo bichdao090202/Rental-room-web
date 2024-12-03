@@ -1,13 +1,13 @@
 'use client'
 import React from 'react';
 import { Card, CardHeader, CardContent, CardActions, Typography, Box, Avatar, Button } from '@mui/material';
-import { formatDay } from '@/common/utils/helpers';
+import { formatCurrency, formatDay } from '@/common/utils/helpers';
 
 export interface HeadCell {
     id: string;
     label: string;
     render?: (value: any) => React.ReactNode;
-    type?: 'string' | 'number' | 'date' | 'render';
+    type?: 'string' | 'number' | 'date' | 'render' | 'money';
 }
 
 interface SmallCardProps {
@@ -47,24 +47,28 @@ const SmallCard: React.FC<SmallCardProps> = ({ dataSource, headCells, onButtonCl
                 />
             )}
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', pl: 2 }}>
-                <Typography variant="h6" sx={{ mb: 1, textAlign: 'left' }}>{dataSource.title}</Typography>
+                <Typography variant="h6" sx={{ mb: 1, textAlign: 'left', fontWeight:'bold' }}>{dataSource.title}</Typography>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, p: 0 }}>
                     {headCells.map((cell) => (
-                        // cell.render ? "" :
+                        cell.label=='Action' ? "" :
                             <Box key={cell.id} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                                 <Typography variant="body2" sx={{ mr: 1 }}>
-                                    {/* {cell.label}: {isNaN(Date.parse(dataSource[cell.id])) ? dataSource[cell.id] : new Date(dataSource[cell.id]).toLocaleDateString()} */}
-                                    {cell.label + ': '}  
+                                    <b>{cell.label + ': '}  </b>
 
-                                    {!cell.render && !cell.type  && formatValue(dataSource[cell.id])}
+                                    {!cell.type  && formatValue(dataSource[cell.id])}
 
                                     {
-                                        cell.type === 'render' && cell.render(dataSource) 
+                                        cell.type === 'money' && formatCurrency(dataSource[cell.id])
+                                    }
+                                    
+                                    {
+                                        cell.type === 'date' && formatDay(dataSource[cell.id])
                                     }
 
-
-                                    
-
+                                    {
+                                        cell.type === 'render' && cell.render && cell.render(dataSource)
+                                    }
+                
                                 </Typography>
                                 <Typography variant="body2">
                                 </Typography>

@@ -1,18 +1,13 @@
 'use client'
 import { get } from "@/common/store/base.service";
-import { formatCurrency } from "@/common/utils/helpers";
-import { Box, Button, Card, ButtonGroup, Tab, InputLabel, CardActions, CardContent, CardMedia, Stack, Paper, Container, Grid, Slider, Modal, Typography, MenuItem, Select, FormControl, Autocomplete, TextField, Chip } from "@mui/material";
-import axios from "axios";
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from "react";
-import { Room } from '../types/index';
-import { ModalOrder } from "@/component/ContractsList/ModalOrder";
-import { Add } from "@mui/icons-material";
 import AddressSelector from "@/component/AddressSelector";
 import RoomCard from "@/component/RoomCard";
 import SearchIcon from "@/component/icons/SearchIcon";
 import theme from "@/styles/theme";
-import OTPVerification from "@/firebase/OTPVerification";
+import { Box, Button, Card, CardContent, Container, FormControl, Grid, InputLabel, MenuItem, Select, Stack, Typography } from "@mui/material";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { Room } from '../types/index';
 
 interface PriceRange {
   min: number;
@@ -31,7 +26,6 @@ const GENDER_OPTIONS = [
   { value: 'male', label: 'Nam' },
   { value: 'female', label: 'Nữ' },
 ];
-
 
 
 export default function Home() {
@@ -53,8 +47,6 @@ export default function Home() {
     priceRange: { min: 0, max: 10000000 }
   });
 
-
-
   useEffect(() => {
     const fetchRooms = async () => {
       setIsLoading(true);
@@ -72,13 +64,8 @@ export default function Home() {
     fetchRooms();
   }, []);
 
-  const handleRoomClick = (id: number) => {
-    router.push(`/room/${id}`);
-  };
-
   return (
     <Box component="section" sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", width: '100%' }}>
-      <OTPVerification onVerificationComplete={handleVerificationComplete} />
 
       <Container
         maxWidth="xl"

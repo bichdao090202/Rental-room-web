@@ -114,12 +114,8 @@ export default function Page() {
     if (!session) return;
 
     try {
-      const response = await axios.get(`http://54.253.233.87:3006/api/v1/users/${session.user.id}`, {
-        headers: {
-          Authorization: `${session.accessToken}`
-        }
-      });
-      const userData = response.data.data;
+      const response = await get(`users/${session.user.id}`, session.accessToken);
+      const userData = response.data;
       setUser(userData);
     } catch (error) {
       console.error("Error fetching user data:", error);

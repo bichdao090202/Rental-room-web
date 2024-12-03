@@ -1,32 +1,27 @@
 "use client";
 
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import { siteConfig } from '@/config/site';
-import { useRouter } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
-import { stringAvatar } from '@/common/utils/helpers';
-import { Tooltip } from '@mui/material';
 import { usersSelectors } from '@/common/store/user/users.selectors';
-import { userAction } from '@/common/store/user/users.actions';
+import { siteConfig } from '@/config/site';
+import { Tooltip } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
 
 interface MainNavbarProps {
   toggleSidebar?: () => void;
 }
 
-const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
-  // const { data: session } = useSession();
+const MainNavbar: React.FC<MainNavbarProps> = () => {
   const router = useRouter();
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
@@ -35,10 +30,6 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
   const [openSubMenu, setOpenSubMenu] = React.useState<number | null>(null);
   const user = usersSelectors.useUserInformation();
   const { data: session } = useSession();
-
-  const handleClickNavItem = (href: string) => {
-    window.location.href = href;
-  };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, index: number) => {
     setAnchorEl(event.currentTarget);
@@ -50,9 +41,6 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
     setOpenSubMenu(null);
   };
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -62,101 +50,32 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
     setAnchorElNav(null);
   };
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
 
   return (
-    <AppBar position="fixed">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          {/* <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} /> */}
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            Rental
-          </Typography>
-
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
+    <AppBar position="fixed">      
+      <Toolbar disableGutters sx={{display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ flexGrow: 1, display: 'flex', ml:"20px" }}>
+            <Typography
+              variant="h6"
+              noWrap
+              component="a"
+              href="/"
               sx={{
-                display: { xs: 'block', md: 'none' },
+                mr: 2,
+                mt: 2,
+                display: 'flex',
+                fontFamily: 'monospace',
+                fontWeight: 700,
+                color: 'inherit',
+                textDecoration: 'none',
               }}
             >
-              {siteConfig.navItems.map((item, index) => (
-                <MenuItem key={index} onClick={() => handleClickNavMenu(item.href)}>
-                  <Typography textAlign="center">{item.label}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-          {/* <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} /> */}
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            {siteConfig.name}
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {/* {siteConfig.navItems.map((item, index) => (
-              <Button
-                key={index}
-                onClick={() => handleClickNavMenu(item.href)}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                {item.label}
-              </Button>
-            ))} */}
+              Rental
+            </Typography>
             {siteConfig.navItems.map((item, index) => (
               <Box
                 key={index}
@@ -176,7 +95,6 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
                 >
                   {item.label}
                 </Button>
-
                 {item.subItems && (
                   <Menu
                     anchorEl={anchorEl}
@@ -228,8 +146,7 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
               </Box>
             ))}
           </Box>
-
-          <Box sx={{ flexGrow: 0 }}>
+          <Box sx={{ flexGrow: 0,display: 'flex',  mr:"20px"}}>
             {true ? (
               <>
                 {/* <Tooltip title={`${(session as any)?.userInformation?.firstName || ''} ${(session as any)?.userInformation?.lastName || ''}`}>
@@ -283,7 +200,6 @@ const MainNavbar: React.FC<MainNavbarProps> = ({ toggleSidebar }) => {
             ) : ""}
           </Box>
         </Toolbar>
-      </Container>
     </AppBar>
   )
 }

@@ -18,7 +18,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { getSession } from 'next-auth/react';
-import axios from 'axios';
+import { get } from '@/common/store/base.service';
 
 interface UserData {
     email: string;
@@ -43,12 +43,8 @@ export default function Home() {
         const session = await getSession();
         if (!session) return;
         try {
-            const response = await axios.get(`http://54.253.233.87:3006/api/v1/users/${session.user.id}`, {
-                headers: {
-                    Authorization: `${session.accessToken}`
-                }
-            });
-            const userData: UserData = response.data.data;
+            const response = await get(`users/${session.user.id}`, session.accessToken);
+            const userData: UserData = response.data;
             console.log(userData);
             setUser(userData);
             setEditedUser(userData);
@@ -104,7 +100,7 @@ export default function Home() {
     if (!user || !editedUser) return null;
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
             <Paper elevation={3} sx={{ p: 4 }}>
                 <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="h4" component="h1">
@@ -140,11 +136,11 @@ export default function Home() {
                 </Box>
 
                 <Grid container spacing={4}>
-                    <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+                    <Grid item xs={12} lg={4} sx={{ textAlign: 'center' }}>
                         <Box sx={{ position: 'relative', display: 'inline-block' }}>
                             <Avatar
-                                src={previewImage || editedUser.img_url || '/placeholder.jpg'}
-                                sx={{ width: 200, height: 200, mb: 2 }}
+                                src={previewImage || editedUser.img_url }
+                                sx={{ width: 250, height: 250, mb: 2 }}
                             />
                             {editMode && (
                                 <label htmlFor="icon-button-file">
@@ -173,7 +169,7 @@ export default function Home() {
                         </Box>
                     </Grid>
 
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12} lg={8}>
                         <Grid container spacing={3}>
                             <Grid item xs={12}>
                                 <TextField

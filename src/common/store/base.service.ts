@@ -1,29 +1,21 @@
-interface BaseOpts {
-  auth?: boolean;
-  onRouteHandler?: boolean;
-  authType?: 'device' | 'server';
-  deviceToken?: string;
-  cache?: RequestCache;
-}
 
-export const get = async (url: string, opts?: BaseOpts): Promise<any> => {
-  const defaultOpts = { auth: true, cache: 'default' as RequestCache };
-  if (opts) {
-    opts = { ...defaultOpts, ...opts };
+
+export const get = async (url: string, token?: string|undefined): Promise<any> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json', 
+  };
+
+  if (token) {
+    headers.Authorization = token; 
   }
+
   const response = await fetch(
-    `${opts?.onRouteHandler ? '' : process.env.NEXT_PUBLIC_API_URL}/${url}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/${url}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: opts?.cache,
+      headers,
     },
   );
-
-  console.log(response);
-  
 
   if (!response.ok) {
     throw Error('Server error!');

@@ -1,0 +1,5 @@
+trong đặc tả usecase và lược đồ activity, khi mở 1 modal có nút xác nhận và đóng, thì làm sao vẽ 2 action này?
+- Trong lược đồ activity, vẽ 2 action riêng biệt, 1 action cho nút xác nhận, 1 action cho nút đóng.
+- Trong đặc tả usecase, chỉ cần viết 1 usecase cho việc mở modal, không cần viết usecase cho việc xác nhận và đóng modal.
+- Trong lược đồ activity, vẽ 1 action cho việc mở modal, sau đó vẽ 2 action con cho việc xác nhận và đóng modal.
+

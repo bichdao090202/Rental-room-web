@@ -17,7 +17,7 @@ import LoadingBox from '@/common/components/LoadingBox';
 export function getBookingStatus(status: number): string {
     switch (status) {
         case 0: 
-            return "ahjgkay"
+            return "Không xác định"
         case 1:
             return "Đang chờ chủ trọ đồng ý";
         case 2:
@@ -52,7 +52,7 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
         { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
-        { id: 'price', label: 'Giá' },
+        { id: 'price', label: 'Giá', type:'money' },
         {
             id: 'status', label: "Trạng thái", type: 'render', render: (row) => getBookingStatus(row.status)
         },

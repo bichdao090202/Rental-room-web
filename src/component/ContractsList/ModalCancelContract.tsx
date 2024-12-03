@@ -2,7 +2,7 @@
 import { Box, Button, Divider, Modal, Typography } from "@mui/material";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { get, put } from "@/common/store/base.service";
+import { get, post, put } from "@/common/store/base.service";
 import Loading from "@/app/loading";
 import { Contract } from "@/types";
 import { createTransaction } from "@/service/main/create_transaction";
@@ -27,7 +27,6 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
             console.error('Error fetching booking requests:', error);
         }
     };
-
 
     useEffect(() => {
         fetchContracts();
@@ -119,15 +118,11 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         <Button variant="contained" sx={{ background: 'primary' }} onClick={async () => {
                             const session = await getSession();
                             const body = {
-                                ...contract,
-                                canceled_by: session?.user.id,
                                 cancel_status: 1,
-                                renter_id: contract?.renter.id,
-                                lessor_id: contract?.lessor.id,
-                                room_id: contract?.room!.id
+                                cancel_by: session?.user.id,
+                                contract_id: contract.id,
                             }
-                            console.log(body);
-                            const res = await put(`contracts/${contract.id}`, body)
+                            const res = await post(`contracts/cancel`, body)
                             onClose()
                         }}>
                             Xác nhận
@@ -142,32 +137,25 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                     <Box display="flex" justifyContent="flex-end" gap={2}>
                         <Button variant="contained" sx={{ background: 'primary' }} onClick={async () => {
                             const body = {
-                                ...contract,
                                 cancel_status: 3,
                                 status: 5,
-                                renter_id: contract?.renter.id,
-                                lessor_id: contract?.lessor.id,
-                                room_id: contract?.room!.id,
                                 canceled_by: contract?.canceled_by.id,
+                                contract_id: contract.id,
                             }
-                            await put(`contracts/${contract.id}`, body)
-                            const id = contract?.canceled_by.id == contract?.renter.id ? contract?.lessor.id : contract?.renter.id
-                            createTransaction(id, 'REFUND', (contract.room!.deposit) * 2, contract?.id)
+                            const res = await post(`contracts/cancel`, body)
+                            // const id = contract?.canceled_by.id == contract?.renter.id ? contract?.lessor.id : contract?.renter.id
+                            // createTransaction(id, 'REFUND', (contract.room!.deposit) * 2, contract?.id)
                             onClose()
                         }}>
                             Đồng ý
                         </Button>
                         <Button variant="contained" onClick={async () => {
                             const body = {
-                                ...contract,
                                 cancel_status: 0,
                                 canceled_by: null,
-                                renter_id: contract?.renter.id,
-                                lessor_id: contract?.lessor.id,
-                                room_id: contract?.room!.id
+                                contract_id: contract.id,
                             }
-                            const res = await put(`contracts/${contract.id}`, body)
-                            console.log(res);
+                            const res = await post(`contracts/cancel`, body)
                             onClose()
                         }}>
                             Không hủy nữa
@@ -178,17 +166,12 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                 {type === "handle" &&
                     <Box display="flex" justifyContent="flex-end" gap={2}>
                         <Button variant="contained" sx={{ background: 'primary' }} onClick={async () => {
-                            const session = await getSession();
                             const body = {
-                                ...contract,
                                 cancel_status: 3,
                                 status: 6,
-                                renter_id: contract?.renter.id,
-                                lessor_id: contract?.lessor.id,
-                                room_id: contract?.room!.id,
                                 canceled_by: contract?.canceled_by.id,
+                                contract_id: contract.id,
                             }
-                            console.log(body);
                             const res = await put(`contracts/${contract.id}`, body)
                             createTransaction(contract?.lessor.id, 'REFUND', contract.room!.deposit, contract?.id)
                             createTransaction(contract?.renter.id, 'REFUND', contract.room!.deposit, contract?.id)
@@ -198,12 +181,9 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         </Button>
                         <Button variant="contained" onClick={async () => {
                             const body = {
-                                ...contract,
                                 cancel_status: 2,
-                                renter_id: contract?.renter.id,
-                                lessor_id: contract?.lessor.id,
-                                room_id: contract?.room!.id,
                                 canceled_by: contract?.canceled_by.id,
+                                contract_id: contract.id,
                             }
                             console.log(body)
                             await put(`contracts/${contract.id}`, body)

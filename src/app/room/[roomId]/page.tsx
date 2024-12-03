@@ -135,8 +135,12 @@ export default function Page({ params }: Params) {
                 {room.title}
               </Typography>
               <Typography color="text.secondary">
-                {`${room.address.detail}, ${room.address.ward_name}`}
+                {`${room.address.detail}, ${isNaN(Number(room.address.ward_name)) ? room.address.ward_name : `Phường ${room.address.ward_name}`
+                  }, ${isNaN(Number(room.address.district_name)) ? room.address.district_name : `Quận ${room.address.district_name}`
+                  }, ${room.address.province_name}`}
               </Typography>
+
+
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
@@ -146,7 +150,7 @@ export default function Page({ params }: Params) {
               </Button>
               <Button variant="contained" color="primary" fullWidth size="large"
                 onClick={handleOpenTermsModal} sx={{ py: 2 }} >
-                Điều khoản dịch vụ
+                Quy định
               </Button>
             </Box>
 
@@ -189,8 +193,8 @@ export default function Page({ params }: Params) {
                     service.price > 0 && (
                       <ListItem key={service.id}>
                         <ListItemText
-                          primary={service.name}
-                          secondary={formatCurrency(service.price)}
+                          primary={service.name } 
+                          secondary={formatCurrency(service.price)+ " / " + service.description}
                         />
                       </ListItem>
                     )
@@ -248,9 +252,26 @@ export default function Page({ params }: Params) {
       </Box>
 
       <Dialog open={openBookingModal} onClose={handleCloseBookingModal} component="form" onSubmit={handleSubmit(onSubmit)} >
-        <DialogTitle>Yêu cầu thuê</DialogTitle>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: 'primary.main',
+            color: 'white',
+            padding: '8px 16px',
+          }}
+        >
+          Yêu cầu thuê
+          <Button
+            onClick={handleCloseBookingModal}
+            sx={{ color: 'white', minWidth: 0, padding: 0 }}
+          >
+            ✕
+          </Button>
+        </DialogTitle>
         <DialogContent>
-          <Box className="max-w-lg mx-auto pt-5 bg-white rounded-lg space-y-5" >
+          <Box className="max-w-lg mx-auto pt-7 bg-white rounded-lg space-y-5 " >
             <CustomFormControl
               name="duration"
               control={control}
@@ -311,7 +332,7 @@ export default function Page({ params }: Params) {
       />
     </Box>
   )
-  
+
   // return (
   //   room && (
   //     <div className="w-full max-w-7xl mx-auto p-6 space-y-8">

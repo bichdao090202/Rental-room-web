@@ -1,15 +1,9 @@
 'use client'
-import { Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography } from "@mui/material";
-import { PaymentInfo } from '../../app/api/payment/vnpay/create-payment-url/route';
-import { createRequestPayment } from "@/service/sub/create_request_payment";
-import { formatCurrency } from "@/common/utils/helpers";
-import CustomFormControl from "@/common/components/FormControl";
 import FormControlDisable from "@/common/components/DisableTextfield";
-import React from "react";
-import { userAction } from "@/common/store/user/users.actions";
-import { createTransaction } from "@/service/main/create_transaction";
-import { useTransactionStore } from "@/common/store/order/store";
 import { post } from "@/common/store/base.service";
+import { formatCurrency } from "@/common/utils/helpers";
+import { Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography } from "@mui/material";
+import React from "react";
 
 export const orderInit = {
     bookingRequestId: 0,
@@ -41,9 +35,6 @@ interface OrderDetail {
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) => {
-    const updateTransactionData = useTransactionStore((state) => state.updateData);
-    const data = useTransactionStore((state) => state.type);
-
     let total = 0;
     let orderDescription = '';
 
@@ -85,7 +76,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                         Thông tin khách hàng:
                     </Typography>
                     <Typography >
-                        {/* ID: {order?.userId} */}
                         ID: {order?.user?.id}
                     </Typography>
                     <Box display="flex" alignItems="center">
@@ -109,7 +99,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                                 }}
                             >
                                 <MenuItem value={-1}>Viettel</MenuItem>
-
                             </Select>
                         </FormControl>
                     </Box>
@@ -124,7 +113,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                             <FormControlDisable
                                 title="Tiền cọc"
                                 value={formatCurrency(order.deposit)} />
-
                             <FormControlDisable
                                 title="Tiền thuê phòng tháng 1"
                                 value={formatCurrency(order.priceMonth)} />
@@ -169,10 +157,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                                 }
                             ]
                         };
-
-                        console.log(body);      
-
-
                         const res = await post('http://54.253.233.87:8010/sign/sign_document', body,false);
                         console.log(res);                        
                         const signedData = res[0].signedData;
@@ -184,8 +168,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                             file_base64: signedData,
                             file_name: `contract-${order.bookingRequestId}`,
                         }
-                        const resp = await post('contracts/booking',newBody);                        
-                        console.log(resp);
+                        const resp = await post('contracts/booking',newBody);   
                         if (resp.status=="SUCCESS") {
                             alert("Tạo hợp đồng thành công");                            
                         } else {
@@ -193,8 +176,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                         }
 
                         onClose();
-                        // updateTransactionData(order, "DEPOSIT,ROOM_CONTRACT");
-                        // createTransaction(order.bookingRequestId, "DEPOSIT,ROOM_CONTRACT", total / 100, order);
                     }}>
                         Thanh toán
                     </Button>
