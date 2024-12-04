@@ -29,7 +29,11 @@ interface LocationState {
   ward_id: number | null;
 }
 
-const AddressSelector: React.FC = () => {
+interface AddressSelectorProps {
+  onLocationChange: (location: { province_id: number | null; district_id: number | null; ward_id: number | null }) => void;
+}
+
+const AddressSelector: React.FC<AddressSelectorProps> = ({ onLocationChange }) => {
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
@@ -134,50 +138,43 @@ const AddressSelector: React.FC = () => {
 
   const handleProvinceChange = (event: SelectChangeEvent<number>) => {
     const newProvinceId = event.target.value as number;
-    setSelectedLocation({
+    const updatedLocation = {
       province_id: newProvinceId,
       district_id: null,
       ward_id: null
-    });
+    };
+    setSelectedLocation(updatedLocation);
     setProvinceSearch('');
     setDistrictSearch('');
     setWardSearch('');
-    console.log({
-      province_id: newProvinceId,
-      district_id: null,
-      ward_id: null
-    });
+    onLocationChange(updatedLocation);
   };
 
   const handleDistrictChange = (event: SelectChangeEvent<number>) => {
     const newDistrictId = event.target.value as number;
-    setSelectedLocation(prev => ({
-      ...prev,
+    const updatedLocation = {
+      province_id: selectedLocation.province_id, 
       district_id: newDistrictId,
-      ward_id: null
-    }));
+      ward_id: null, 
+    };
+    setSelectedLocation(updatedLocation);
     setDistrictSearch('');
     setWardSearch('');
-    console.log({
-      province_id: selectedLocation.province_id,
-      district_id: newDistrictId,
-      ward_id: null
-    });
+    onLocationChange(updatedLocation); 
   };
-
+  
   const handleWardChange = (event: SelectChangeEvent<number>) => {
     const newWardId = event.target.value as number;
-    setSelectedLocation(prev => ({
-      ...prev,
-      ward_id: newWardId
-    }));
+    const updatedLocation = {
+      province_id: selectedLocation.province_id, 
+      district_id: selectedLocation.district_id, 
+      ward_id: newWardId,
+    };
+    setSelectedLocation(updatedLocation);
     setWardSearch('');
-    console.log({
-      province_id: selectedLocation.province_id,
-      district_id: selectedLocation.district_id,
-      ward_id: newWardId
-    });
+    onLocationChange(updatedLocation); 
   };
+  
 
   const handleSelectOpen = (ref: React.RefObject<HTMLInputElement>) => {
     setTimeout(() => {

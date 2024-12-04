@@ -41,6 +41,17 @@ export default function Home() {
   const [gender, setGender] = useState('both');
   const [priceRange, setPriceRange] = useState<PriceRange>({ min: 0, max: 10000000 });
 
+  const [selectedLocation, setSelectedLocation] = useState<{ province_id: number | null; district_id: number | null; ward_id: number | null }>({
+    province_id: null,
+    district_id: null,
+    ward_id: null,
+  });
+
+  const handleLocationChange = (location: { province_id: number | null; district_id: number | null; ward_id: number | null }) => {
+    setSelectedLocation(location); 
+    console.log('Location updated in parent:', location);
+  };
+
   const [filters, setFilters] = useState({
     roomType: 'all',
     gender: 'both',
@@ -63,6 +74,8 @@ export default function Home() {
     };
     fetchRooms();
   }, []);
+
+
 
   return (
     <Box component="section" sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", width: '100%' }}>
@@ -103,7 +116,7 @@ export default function Home() {
                     Địa chỉ:
                   </Typography>
 
-                  <AddressSelector />
+                  <AddressSelector onLocationChange={handleLocationChange} />
                 </Box>
 
                 <FormControl sx={{ minWidth: 250 }}>
