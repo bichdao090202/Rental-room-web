@@ -30,7 +30,7 @@ import axios from 'axios';
 import { Room } from '@/types';
 import { getSession, useSession } from 'next-auth/react';
 import { AttachMoney, MonetizationOn } from '@mui/icons-material';
-
+import { getRoomTypeNameById } from '@/app/manager/lessor/room/create/CreateRoomForm';
 interface Params {
   params: {
     roomId: number;
@@ -135,11 +135,13 @@ export default function Page({ params }: Params) {
                 {room.title}
               </Typography>
               <Typography color="text.secondary">
-                {`${room.address.detail}, ${isNaN(Number(room.address.ward_name)) ? room.address.ward_name : `Phường ${room.address.ward_name}`
+                {`${isNaN(Number(room.address.ward_name)) ? room.address.ward_name : `Phường ${room.address.ward_name}`
                   }, ${isNaN(Number(room.address.district_name)) ? room.address.district_name : `Quận ${room.address.district_name}`
                   }, ${room.address.province_name}`}
               </Typography>
-
+              <Typography color="text.secondary">
+                {`${room.address.detail}`}
+              </Typography>
 
             </Box>
 
@@ -171,10 +173,38 @@ export default function Page({ params }: Params) {
                 <Card>
                   <CardContent>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                      Loại phòng
+                    </Typography>
+                    <Typography variant="h6">
+                      {getRoomTypeNameById(room.room_type)}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+
+            <Grid container spacing={2} sx={{ mt: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                      Người ở tối đa
+                    </Typography>
+                    <Typography variant="h6">
+                      {room.max_people?? "Không quy định"}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                       Diện tích
                     </Typography>
                     <Typography variant="h6">
-                      {room.acreage} m²
+                      {room.acreage? `${room.acreage} m²` : "Không quy định"} 
                     </Typography>
                   </CardContent>
                 </Card>

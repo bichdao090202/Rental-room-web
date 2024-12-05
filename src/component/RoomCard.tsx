@@ -42,7 +42,9 @@ interface RoomCardProps {
             {formatCurrency(room.price)}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {`${room.address.ward_name}, ${room.address.district_name}, ${room.address.province_name}`}
+            {`${isNaN(Number(room.address.ward_name)) ? room.address.ward_name : `Phường ${room.address.ward_name}`
+                  }, ${isNaN(Number(room.address.district_name)) ? room.address.district_name : `Quận ${room.address.district_name}`
+                  }, ${room.address.province_name}`}
           </Typography>
         </CardContent>
       </Card>
