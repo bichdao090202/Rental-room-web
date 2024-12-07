@@ -10,6 +10,20 @@ export const metadata: Metadata = {
     template: `%s - ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.logo,
+        width: 90,
+        height: 90,
+      },
+    ],
+    locale: "vi_VN",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -19,6 +33,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href={siteConfig.logo} type="image/png" />
+        <title>{siteConfig.name}</title>
+      </head>
       <body className={` antialiased`}>
         <Providers>
           <div className="m-7">

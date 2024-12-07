@@ -1,11 +1,14 @@
-import { Label } from "@mui/icons-material";
-
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-	name: "Rental room web",
+	name: "Hệ thống cho thuê nhà trọ",
 	description: "Giúp bạn thuê trọ tiện lợi",
+  openGraph: {
+    image: "/logo.png", 
+    alt: "Hệ thống cho thuê nhà trọ Logo",
+  },
   version: "0.0.1",
+  logo: "/logo.png",
 	navItems: [
 		{
 			label: "Trang chủ",
@@ -39,7 +42,7 @@ export const siteConfig = {
     }
 	],
   userMenu: [
-		{ //Thông tin cá nhân , Phương thức thanh toán
+		{ 
 			label: "Tài khoản",
 			href: "/user/info",
 		},

@@ -21,15 +21,15 @@ import {
   ListItemIcon,
   Container,
   Paper,
+  IconButton,
 } from '@mui/material';
 import { formatCurrency } from '@/common/utils/helpers';
 import CustomFormControl from '@/common/components/FormControl';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { get, post } from '@/common/store/base.service';
-import axios from 'axios';
 import { Room } from '@/types';
 import { getSession, useSession } from 'next-auth/react';
-import { AttachMoney, MonetizationOn } from '@mui/icons-material';
+import { ArrowBackIos, ArrowForwardIos, AttachMoney, MonetizationOn } from '@mui/icons-material';
 import { getRoomTypeNameById } from '@/app/manager/lessor/room/create/CreateRoomForm';
 interface Params {
   params: {
@@ -54,8 +54,7 @@ export default function Page({ params }: Params) {
       renter_id: session?.user?.id,
       lessor_id: room?.owner_id,
       room_id: Number(roomId),
-      status: "PROCESSING",
-      note: "Waiting for landlord approval",
+      status: 1,
       message_from_renter: data.message,
       start_date: new Date(data.date).toISOString(),
       rental_duration: Number(data.duration),
@@ -115,21 +114,230 @@ export default function Page({ params }: Params) {
     fetchBookingRequests();
   }, []);
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [openZoom, setOpenZoom] = useState(false);
+  const [openGallery, setOpenGallery] = useState(false);
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      (prev + 1) % room!.images.length
+    );
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? room!.images.length - 1 : prev - 1
+    );
+  };
+
   return (
     room &&
     <Box className="w-full space-y-1">
       <Box sx={{ width: '100%', p: 2 }}>
         <Grid container spacing={4}>
           <Grid item xs={12} md={8}>
-            <Box sx={{ position: 'relative' }}>
-              <img src={room.images[0]} alt={room.title} style={{ width: '100%', height: 'auto', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 2 }} />
-              <Paper elevation={3} sx={{ position: 'absolute', bottom: 16, right: 16, px: 2, py: 1, borderRadius: 8 }} >
+            <Dialog
+              open={openGallery}
+              onClose={() => setOpenGallery(false)}
+              maxWidth="md"
+              fullWidth
+            >
+              <DialogContent sx={{ position: 'relative', p: 0 }}>
+                <img
+                  src={room.images[currentImageIndex]}
+                  alt={`Full image ${currentImageIndex + 1}`}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: '80vh',
+                    objectFit: 'contain'
+                  }}
+                />
+                <IconButton
+                  onClick={handlePrevImage}
+                  sx={{
+                    position: 'absolute',
+                    left: 10,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: 'rgba(255,255,255,0.7)'
+                  }}
+                >
+                  <ArrowBackIos />
+                </IconButton>
+                <IconButton
+                  onClick={handleNextImage}
+                  sx={{
+                    position: 'absolute',
+                    right: 10,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: 'rgba(255,255,255,0.7)'
+                  }}
+                >
+                  <ArrowForwardIos />
+                </IconButton>
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 1,
+                  py: 2,
+                  overflowX: 'auto'
+                }}>
+                  {room.images.map((img, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        border: index === currentImageIndex ? '2px solid primary.main' : '1px solid grey'
+                      }}
+                      onClick={() => setCurrentImageIndex(index)}
+                    >
+                      <img
+                        src={img}
+                        alt={`Thumbnail ${index + 1}`}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </DialogContent>
+            </Dialog>
+
+            <Box sx={{ position: 'relative', width: '100%' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  overflow: 'hidden',
+                  width: '100%'
+                }}
+              >
+                {room.images.map((img, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      flexShrink: 0,
+                      width: '100%',
+                      transform: `translateX(-${currentImageIndex * 100}%)`,
+                      transition: 'transform 0.3s ease-in-out'
+                    }}
+                  >
+                    <img
+                      src={img}
+                      alt={`Image ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '600px',
+                        objectFit: 'cover',
+                        borderRadius: 8
+                      }}
+                      onClick={() => setOpenGallery(true)}
+                    />
+                  </Box>
+                ))}
+              </Box>
+              <Box sx={{
+                position: 'absolute',
+                bottom: 10,
+                left: 0,
+                right: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 1
+              }}>
+                {room.images.map((_, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      bgcolor: index === currentImageIndex ? 'primary.main' : 'grey.500'
+                    }}
+                  />
+                ))}
+              </Box>
+              <IconButton
+                onClick={handlePrevImage}
+                sx={{
+                  position: 'absolute',
+                  left: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  bgcolor: 'rgba(255,255,255,0.7)'
+                }}
+              >
+                <ArrowBackIos />
+              </IconButton>
+              <IconButton
+                onClick={handleNextImage}
+                sx={{
+                  position: 'absolute',
+                  right: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  bgcolor: 'rgba(255,255,255,0.7)'
+                }}
+              >
+                <ArrowForwardIos />
+              </IconButton>
+              <Paper
+                elevation={3}
+                sx={{
+                  position: 'absolute',
+                  bottom: 16,
+                  right: 16,
+                  px: 2,
+                  py: 1,
+                  borderRadius: 8
+                }}
+              >
                 <Typography variant="h6" color="error">
                   {formatCurrency(room.price)}
                 </Typography>
               </Paper>
             </Box>
 
+
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mt: 2,
+              gap: 1
+            }}>
+              {room.images.map((img, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    border: index === currentImageIndex ? '2px solid primary.main' : '1px solid grey',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setCurrentImageIndex(index)}
+                >
+                  <img
+                    src={img}
+                    alt={`Thumbnail ${index + 1}`}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </Box>
+              ))}
+            </Box>
             <Box sx={{ mt: 3 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {room.title}
@@ -192,7 +400,7 @@ export default function Page({ params }: Params) {
                       Người ở tối đa
                     </Typography>
                     <Typography variant="h6">
-                      {room.max_people?? "Không quy định"}
+                      {room.max_people ?? "Không quy định"}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -204,7 +412,7 @@ export default function Page({ params }: Params) {
                       Diện tích
                     </Typography>
                     <Typography variant="h6">
-                      {room.acreage? `${room.acreage} m²` : "Không quy định"} 
+                      {room.acreage ? `${room.acreage} m²` : "Không quy định"}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -223,8 +431,8 @@ export default function Page({ params }: Params) {
                     service.price > 0 && (
                       <ListItem key={service.id}>
                         <ListItemText
-                          primary={service.name } 
-                          secondary={formatCurrency(service.price)+ " / " + service.description}
+                          primary={service.name}
+                          secondary={formatCurrency(service.price) + " / " + service.description}
                         />
                       </ListItem>
                     )

@@ -48,7 +48,7 @@ export default function Home() {
   });
 
   const handleLocationChange = (location: { province_id: number | null; district_id: number | null; ward_id: number | null }) => {
-    setSelectedLocation(location); 
+    setSelectedLocation(location);
     console.log('Location updated in parent:', location);
   };
 
@@ -201,29 +201,37 @@ export default function Home() {
 
 
         <Typography variant="h5" sx={{ mb: 3 }}>Phòng trọ nổi bật</Typography>
-        <Grid
-          container
-          spacing={{ xs: 1, sm: 2, md: 3 }}
-          sx={{ mb: 6 }}
-        >
-          {rooms.slice(0, 4).map((room) => (
-            <Grid item xs={12} sm={6} md={3} key={room.id}>
-              <RoomCard room={room} onClick={(id) => router.push(`/room/${id}`)} />
-            </Grid>
-          ))}
-        </Grid>
+        {rooms ?
+          <Grid
+            container
+            spacing={{ xs: 1, sm: 2, md: 3 }}
+            sx={{ mb: 6 }}
+          >
+            {rooms.slice(0, 4).map((room) => (
+              <Grid item xs={12} sm={6} md={3} key={room.id}>
+                <RoomCard room={room} onClick={(id) => router.push(`/room/${id}`)} />
+              </Grid>
+            ))}
+          </Grid>
+          : "Không có phòng trọ nào phù hợp."
+        }
+
 
         <Typography variant="h5" sx={{ mb: 3 }}>Gần chỗ bạn</Typography>
-        <Grid
-          container
-          spacing={{ xs: 1, sm: 2, md: 2.5 }}
-        >
-          {rooms.map((room) => (
-            <Grid item xs={12} sm={6} md={3} key={room.id}>
-              <RoomCard room={room} onClick={(id) => router.push(`/room/${id}`)} />
-            </Grid>
-          ))}
-        </Grid>
+        {rooms ?
+          <Grid
+            container
+            spacing={{ xs: 1, sm: 2, md: 2.5 }}
+          >
+            {rooms.map((room) => (
+              <Grid item xs={12} sm={6} md={3} key={room.id}>
+                <RoomCard room={room} onClick={(id) => router.push(`/room/${id}`)} />
+              </Grid>
+            ))}
+          </Grid>
+          : "Không có phòng trọ nào phù hợp."
+        }
+
       </Container>
     </Box>
   );

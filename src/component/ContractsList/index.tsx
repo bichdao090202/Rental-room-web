@@ -136,7 +136,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
     }
 
     const headCells: HeadCell[] = [
-        { id: 'status', label: "Trạng thái", type: 'render', render: (row) => getContractStatus(row.status)},
+        { id: 'status', label: "Trạng thái", type: 'render', render: (row) => getContractStatus(row.status) },
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
         { id: 'monthly_price', label: 'Giá mỗi tháng', type: 'money' },
@@ -145,7 +145,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
             id: 'action', label: "Action",
             render: (row) =>
             (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>                   
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Button variant="contained" color="primary" onClick={() => {
                         window.open(row.file_path, '_blank');
                     }}>
@@ -170,7 +170,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
 
 
                     {
-                        isLastMonth(row.start_date, row.rental_duration) && row.status == 2 && type === 'renter' && 
+                        isLastMonth(row.start_date, row.rental_duration) && row.status == 2 && type === 'renter' &&
                         <Button variant="contained" color="warning" onClick={async () => {
                             setOpenAlert(true);
                             setMessage("Bạn thật sự muốn thanh lý hợp đồng này?")
@@ -193,7 +193,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     {
                         type === 'renter' && row.status == 3 &&
                         <Button variant="contained" color="warning" onClick={async () => {
-                            
+
                         }}>
                             Xem thanh lý
                         </Button>
@@ -301,6 +301,9 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                 Danh sách hợp đồng
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {
+                    bookingRequests.length === 0 && <Typography>Không có hợp đồng nào</Typography>
+                }
                 {bookingRequests.map((request) => (
                     <SmallCard key={request.id}
                         dataSource={{
@@ -337,7 +340,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     onClose={closeModalConfirm}
                     width="70%"
                     height="auto"
-                    title="Thanh khoản hợp đồng"
+                    title="Thanh lý hợp đồng"
                     type="confirm"
                     onConfirm={handleConfirm}
                 >

@@ -31,9 +31,10 @@ interface LocationState {
 
 interface AddressSelectorProps {
   onLocationChange: (location: { province_id: number | null; district_id: number | null; ward_id: number | null }) => void;
+  initialAddress?: { ward_id: number | null };
 }
 
-const AddressSelector: React.FC<AddressSelectorProps> = ({ onLocationChange }) => {
+const AddressSelector: React.FC<AddressSelectorProps> = ({ onLocationChange, initialAddress }) => {
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
@@ -73,6 +74,34 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({ onLocationChange }) =
     return normalize(a).localeCompare(normalize(b));
   };
 
+  //to set ward id
+  // useEffect(() => {
+  //   if (initialAddress?.ward_id && initialAddress.ward_id !== selectedLocation.ward_id) {
+  //     const location = findLocationByWardId(initialAddress.ward_id);
+  //     if (location) {
+  //       setSelectedLocation(location);
+  //     }
+  //   }
+  // }, [initialAddress, selectedLocation.ward_id]);
+
+  // useEffect(() => {
+  //   onLocationChange(selectedLocation);
+  // }, [selectedLocation, onLocationChange]);
+
+  const findLocationByWardId = (wardId: number) => {
+    const ward = wards.find(w => w.id === wardId);
+    if (!ward) return null;
+
+    const district = districts.find(d => d.id === ward.district_id);
+    const province = district ? provinces.find(p => p.id === district.province_id) : null;
+
+    return {
+      province_id: province?.id || null,
+      district_id: district?.id || null,
+      ward_id: ward.id,
+    };
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -92,13 +121,31 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({ onLocationChange }) =
           compareLocations(a.district_name, b.district_name)));
         setWards(wardsData.sort((a: Ward, b: Ward) => 
           compareLocations(a.ward_name, b.ward_name)));
+
+        // If initial ward_id is provided, set the location
+        if (initialAddress?.ward_id) {
+          const location = findLocationByWardId(initialAddress.ward_id);
+          if (location) {
+            setSelectedLocation(prevLocation => {
+              if (
+                location.province_id !== prevLocation.province_id ||
+                location.district_id !== prevLocation.district_id ||
+                location.ward_id !== prevLocation.ward_id
+              ) {
+                onLocationChange(location);
+                return location;
+              }
+              return prevLocation;
+            });
+          }
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [initialAddress]);
 
   const normalizeText = (text: string) => {
     return text.normalize('NFD')

@@ -30,7 +30,7 @@ const MainNavbar: React.FC<MainNavbarProps> = () => {
   const [openSubMenu, setOpenSubMenu] = React.useState<number | null>(null);
   const user = usersSelectors.useUserInformation();
   const { data: session } = useSession();
-
+  
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, index: number) => {
     setAnchorEl(event.currentTarget);
     setOpenSubMenu(index);
@@ -160,7 +160,7 @@ const MainNavbar: React.FC<MainNavbarProps> = () => {
                 </Tooltip> */}
                 <Tooltip title={session ? `User ${session.user!.id}` : 'none'}>
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar alt="User Avatar" />
+                    <Avatar src={(session as any)?.user?.img_url || (session as any)?.userInformation?.img_url} alt="User Avatar"  />
                   </IconButton>
                 </Tooltip>
                 <Menu

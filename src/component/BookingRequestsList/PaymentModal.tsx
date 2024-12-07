@@ -98,7 +98,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                                     },
                                 }}
                             >
-                                <MenuItem value={-1}>Viettel</MenuItem>
+                                <MenuItem value={-1}>VNPT</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
@@ -132,7 +132,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
                     <Button variant="contained" sx={{ background: '#1976d2' }} onClick={ async() => {
                         const body = {
-                            user_id: "083202010950_002",
+                            user_id: "083202010950",
                             serial_number: "54010101b710e8055dcb29e10f1aa584",
                             image_base64: "",
                             rectangles: [
@@ -157,7 +157,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                                 }
                             ]
                         };
-                        const res = await post('http://54.253.233.87:8010/sign/sign_document', body,false);
+                        const res = await post('https://mallard-fluent-lightly.ngrok-free.app/api/sign/sign_document', body,false);
                         console.log(res);                        
                         const signedData = res[0].signedData;
                         console.log(signedData);
@@ -174,7 +174,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                         } else {
                             alert("Tạo hợp đồng thất bại, thủ lại sau");
                         }
-
                         onClose();
                     }}>
                         Thanh toán

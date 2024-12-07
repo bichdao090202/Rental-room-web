@@ -16,7 +16,7 @@ import LoadingBox from '@/common/components/LoadingBox';
 
 export function getBookingStatus(status: number): string {
     switch (status) {
-        case 0: 
+        case 0:
             return "Không xác định"
         case 1:
             return "Đang chờ chủ trọ đồng ý";
@@ -52,16 +52,16 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
         { id: 'start_date', label: 'Ngày bắt đầu' },
         { id: 'rental_duration', label: 'Thời gian thuê(tháng)' },
         { id: 'message_from_renter', label: 'Tin nhắn từ khách hàng' },
-        { id: 'price', label: 'Giá', type:'money' },
+        { id: 'price', label: 'Giá', type: 'money' },
+        { id: 'deposit', label: 'Tiền cọc', type: 'money' },
         {
             id: 'status', label: "Trạng thái", type: 'render', render: (row) => getBookingStatus(row.status)
         },
         {
             id: 'action', label: "Action",
             render: (row) =>
-            (type === 'renter' ?
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {row.note == "Waiting for renter to sign and pay" && (
+                    {row.status == 2 && type == 'renter' && (
                         <Button variant="contained" color="success" onClick={() => {
                             setPaymentModal(true);
                             setOrder({
@@ -81,30 +81,13 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                         }}>Thanh toán</Button>
                     )}
 
-                    {row.note === "Waiting for renter to sign and pay" && row.message_from_lessor && (
-                        <OpenPdfButton
-                            fileBase64={row.message_from_lessor}
-                            filename={"SignDocument.pdf"}
-                        />
-                    )}
-
                     <Button variant="contained" color="primary" onClick={() => {
                         router.push(`/room/${row.room_id}`)
                     }}>
                         Xem phòng
                     </Button>
 
-                    {row.status != 'Success' && (
-                        <Button variant="contained" color="error" onClick={() => {
-
-                        }}>
-                            Hủy
-                        </Button>
-                    )}
-                </Box>
-                :
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {row.note == "Waiting for landlord approval" && (
+                    {row.status == 1 && type == 'lessor' && (
                         <Button onClick={() => {
                             setOpen(true);
                             setSelectedRequest(row);
@@ -113,26 +96,36 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                         </Button>
                     )}
 
-                    {row.status != 'Success' && (
+                    {(row.status == 1 || row.status == 2) && type == 'lessor' && (
                         <Button variant="contained" color="error" >
                             Từ chối
                         </Button>
                     )}
 
-                    {row.note === "Waiting for renter to sign and pay" && row.message_from_lessor && (
+                    {(row.status == 1 || row.status == 2) && type == 'renter' && (
+                        <Button variant="contained" color="error" >
+                            Hủy
+                        </Button>
+                    )}
+
+                    {row.status == 2 && row.message_from_lessor && (
                         <OpenPdfButton
                             fileBase64={row.message_from_lessor}
                             filename={"SignDocument.pdf"}
                         />
                     )}
+                    {type == 'lessor' && (
+                        <Button variant="contained" color="warning" >
+                            Người thuê
+                        </Button>
+                    )}
 
-                    <Button variant="contained" color="primary" onClick={() => {
-                        router.push(`/room/${row.room_id}`)
-                    }}>
-                        Xem phòng
-                    </Button>
+                    {type == 'renter' && (
+                        <Button variant="contained" color="warning" >
+                            Chủ trọ
+                        </Button>
+                    )}
                 </Box>
-            )
         },
 
     ]
@@ -159,33 +152,41 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
     const handleClose = () => setOpen(false);
     const handleConfirm = async () => {
         setLoading(true);
-        const fileBase64 = await getBase64FromPdf(selectedFile!);
-        console.log('Đã giải mã file');
-
-        await handleSignDoc(fileBase64!);
+        const body ={
+            user_id: "083202010950",
+            provider: "VNPT",
+        }
+        try {
+            const res = await post('https://mallard-fluent-lightly.ngrok-free.app/api/sign/get_certificate', body, false);
+            console.log(res)
+            alert('Thành công')
+        } catch {
+            alert('Lỗi, thử lại sau')
+        }
+        
+        // const fileBase64 = await getBase64FromPdf(selectedFile!);
+        // await handleSignDoc(fileBase64!);
         setLoading(false);
-        setOpen(false)
-        setSuccessModalOpen(true);
     };
 
     const updateBookingRequest = async (basa64: any) => {
         if (!selectedRequest) return;
-
         const updatedRequest = {
             ...selectedRequest,
-            note: "Waiting for renter to sign and pay",
+            status: 2,
             message_from_lessor: basa64!,
         };
-        const res = await put(`booking-requests/${selectedRequest.id}`, updatedRequest);
-        console.log(res);
-        setBookingRequests(bookingRequests =>
-            bookingRequests.map(obj => obj.id === selectedRequest.id ? res.data : obj)
-        );
+        console.log(basa64);
+        // const res = await put(`booking-requests/${selectedRequest.id}`, updatedRequest);
+        // console.log(res);
+        // setBookingRequests(bookingRequests =>
+        //     bookingRequests.map(obj => obj.id === selectedRequest.id ? res.data : obj)
+        // );
     }
 
     const handleSignDoc = async (fileBase64: string) => {
         const body = {
-            user_id: "083202010950_002",
+            user_id: "083202010950",
             serial_number: "54010101b710e8055dcb29e10f1aa584",
             image_base64: "",
             rectangles: [
@@ -212,16 +213,19 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
         };
         console.log(body)
         try {
-            const res = await post('http://54.253.233.87:8010/sign/sign_document', body,false);
+            const res = await post('https://mallard-fluent-lightly.ngrok-free.app/api/sign/sign_document', body, false);
             console.log(res)
             const file = base64ToFile(res[0].signedData, "DocumentSigned.pdf");
+            if (!file) return;
             updateBookingRequest(res[0].signedData);
+            setOpen(false)
+            setSuccessModalOpen(true);
         } catch {
             alert('Lỗi, thử lại sau')
-            router.push('manager/lessor/booking-request')
+            fetchBookingRequests();
         }
 
-    
+
         // const response = await fetch("https://mallard-fluent-lightly.ngrok-free.app/signPdfBase64ImageDisplay", {
         //     method: "POST",
         //     headers: {
@@ -256,6 +260,9 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                 Danh sách yêu cầu thuê
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {
+                    bookingRequests.length === 0 && <Typography>Không có yêu cầu nào</Typography>
+                }
                 {bookingRequests.map((request) => (
                     <SmallCard key={request.id}
                         dataSource={{
@@ -300,7 +307,6 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                         {selectedRequest.rental_duration} tháng
                     </Typography>
 
-
                     <Box display="flex" alignItems="center">
                         <Typography sx={{ marginRight: '10px' }}>Chọn nhà cung cấp chữ ký số:</Typography>
                         <FormControl variant="outlined" className="w-1/5">
@@ -321,7 +327,7 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                                     },
                                 }}
                             >
-                                <MenuItem value={-1}>Viettel</MenuItem>
+                                <MenuItem value={-1}>VNPT</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
@@ -355,12 +361,6 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                     >
                         <Typography variant="h6">Hợp đồng đã được ký thành công!</Typography>
                         <Box display="flex" justifyContent="flex-end" gap={2}>
-                            {/* <Button onClick={openPdfInNewTab} variant="contained" color="primary">
-                            Mở File PDF
-                        </Button> */}
-                            {/* <Button onClick={() => setSuccessModalOpen(false)} variant="outlined">
-                            Đóng
-                        </Button> */}
                             <Button onClick={() => {
                                 setSuccessModalOpen(false)
                                 fetchBookingRequests();
@@ -370,7 +370,6 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                         </Box>
                     </Box>
                 </Modal>}
-
         </Box>
     );
 };

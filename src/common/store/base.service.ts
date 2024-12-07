@@ -33,6 +33,8 @@ export const post = async (
       domain ?  `${process.env.NEXT_PUBLIC_API_URL}/${url}` : `${url}` ,
       {
         method: 'POST',
+        
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -30,22 +30,22 @@ export default function Page() {
                         variant="contained" onClick={() => router.push(`/room/${row.id}`)}>
                         Xem phòng
                     </Button>
-                    {row.status ? (
-                        <>
+                    <>
                             {row.status == 1 && (
                                 <Button variant="contained" color="inherit"
-                                    onClick={() => updateRoomStatus(row.id, 1)} >
+                                    onClick={() => updateRoomStatus(row.id, 2)} >
                                     {getRoomStatus(2)}
                                 </Button>
                             )}
-                            {(row.status == 2 || row.status == 0) && (
+                            {(row.status == 2 || row.status == 0 ) && (
                                 <Button variant="contained" color="success"
-                                    onClick={() => updateRoomStatus(row.id, 2)} >
+                                    onClick={() => updateRoomStatus(row.id, 1)} >
                                     {getRoomStatus(1)}
                                 </Button>
                             )}
+
                         </>
-                    ) : ""}
+                    
                     <Button variant="contained" color="error"
                         onClick={() => updateRoomStatus(row.id, 2)} >
                         Xóa
@@ -70,12 +70,14 @@ export default function Page() {
     }, []);
 
     const updateRoomStatus = async (id: number, status: number) => {
-        const response = await put(`rooms/${id}`, { id: id, status: status });
+        const body = { id: id, status: status };
+        console.log(body);
+        const response = await put(`rooms/${id}/status`, body);
+        console.log(response);
+        if (response.status == "SUCCESS")
+            alert("Cập nhật trạng thái thành công");
         fetchRooms();
-
     }
-
-
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', width: '70vw' }}>
@@ -85,10 +87,10 @@ export default function Page() {
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {rooms.map((room) => (
+                {rooms?.map((room) => (
                     <SmallCard key={room.id}
                         dataSource={{
-                            image: room.images[0] || '',
+                            image: room.images[0] ?? '',
                             title: room.title,
                             id: room.id,
                             price: formatCurrency(room.price),
