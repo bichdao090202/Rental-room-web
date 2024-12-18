@@ -32,9 +32,7 @@ export const post = async (
     const response = await fetch(
       domain ?  `${process.env.NEXT_PUBLIC_API_URL}/${url}` : `${url}` ,
       {
-        method: 'POST',
-        
-        mode: 'no-cors',
+        method: 'POST',        
         headers: {
           'Content-Type': 'application/json',
         },

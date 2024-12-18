@@ -7,8 +7,8 @@ export default function getRoomStatus(status: number): string {
         case 2:
             return "Chưa sẵn sàng";
         case 3:
-            return "Dang cho thuê";
+            return "Đang cho thuê";
         default:
-            return "Đang thuê";
+            return "Đang cho thuê";
     }
 }

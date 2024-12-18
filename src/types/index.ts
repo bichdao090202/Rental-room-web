@@ -87,6 +87,7 @@ export interface Contract {
   pdfPath: string;
   invoices: any;
   start_date: Date;
+  rental_duration: number;
 
 }
 
@@ -104,6 +105,8 @@ export interface BookingRequest {
   rental_duration: number;
   response_date?: Date;
   contract_id?: number;
+  renter: any;
+  lessor: any;
 }
 
 interface BankCard {

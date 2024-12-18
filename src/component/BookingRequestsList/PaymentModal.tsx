@@ -3,7 +3,7 @@ import FormControlDisable from "@/common/components/DisableTextfield";
 import { post } from "@/common/store/base.service";
 import { formatCurrency } from "@/common/utils/helpers";
 import { Box, Button, Divider, FormControl, MenuItem, Modal, Select, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 
 export const orderInit = {
     bookingRequestId: 0,
@@ -35,6 +35,7 @@ interface OrderDetail {
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) => {
+    const [loading, setLoading] = useState(false);
     let total = 0;
     let orderDescription = '';
 
@@ -60,8 +61,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: '80vw',
-                    height: '70vh',
+                    width: '900px',
+                    height: 'auto',
                     bgcolor: 'background.paper',
                     boxShadow: 24,
                     p: 4,
@@ -130,53 +131,66 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, order }) =>
                     }
                 </Box>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
-                    <Button variant="contained" sx={{ background: '#1976d2' }} onClick={ async() => {
-                        const body = {
-                            user_id: "083202010950",
-                            serial_number: "54010101b710e8055dcb29e10f1aa584",
-                            image_base64: "",
-                            rectangles: [
-                                {
-                                    number_page_sign: 1,
-                                    margin_top: 100,
-                                    margin_left: 100,
-                                    margin_right: 500,
-                                    margin_bottom: 100
-                                }
-                            ],
-                            visible_type: 0,
-                            contact: "",
-                            font_size: 12,
-                            sign_files: [
-                                {
-                                    data_to_be_signed: "c803ba9e0b741be5995687c3611ecea617d532f12d7bae81aad0fa5d6ffe3f23",
-                                    doc_id: "32c-7401-25621",
-                                    file_type: "pdf",
-                                    sign_type: "hash",
-                                    file_base64: order.base64
-                                }
-                            ]
-                        };
-                        const res = await post('https://mallard-fluent-lightly.ngrok-free.app/api/sign/sign_document', body,false);
-                        console.log(res);                        
-                        const signedData = res[0].signedData;
-                        console.log(signedData);
-                        if (!signedData) return;
-                        const newBody = {   
-                            booking_request_id: order.bookingRequestId,
-                            pay_for: 2,
-                            file_base64: signedData,
-                            file_name: `contract-${order.bookingRequestId}`,
+                    <Button variant="contained" color="success" onClick={async () => {
+                        setLoading(true);                   
+                        try {
+                            const body = {
+                                user_id: "083202010950",
+                                serial_number: "54010101eec8a59ad71b4777401e27f4",
+                                transaction_id: "da25ed27-7bfe-495f-89fd-06723a584094",
+                                time_stamp: "2024-09-17T15:58:01+07:00",
+                                image_base64: "",
+                                rectangles: [
+                                    {
+                                        number_page_sign: 1,
+                                        margin_top: 100,
+                                        margin_left: 10,
+                                        margin_right: 250,
+                                        margin_bottom: 200
+                                    }
+                                ],
+                                visible_type: 1,
+                                contact: "",
+                                font_size: 12,
+                                sign_files: [
+                                    {
+                                        data_to_be_signed: "c803ba9e0b741be5995687c3611ecea617d532f12d7bae81aad0fa5d6ffe3f23",
+                                        doc_id: "32c-7401-25621",
+                                        file_type: "pdf",
+                                        sign_type: "hash",
+                                        file_base64: order.base64,
+                                        tag_save_signature: ""
+                                    }
+                                ]
+                            };
+                            const res = await post('https://mallard-fluent-lightly.ngrok-free.app/api/sign/sign_document', body, false);
+                            console.log(res);
+                            const signedData = res[0].signed_data;
+                            console.log(signedData);
+                            if (!signedData) return;
+                            const newBody = {
+                                booking_request_id: order.bookingRequestId,
+                                pay_for: 2,
+                                file_base64: signedData,
+                                file_name: `contract-${order.bookingRequestId}.pdf`,
+                            }
+                            const resp = await post('contracts/booking', newBody);
+                            if (resp.status == "SUCCESS") {
+                                alert("Tạo hợp đồng thành công");
+                            } else {
+                                alert("Tạo hợp đồng thất bại, thủ lại sau");
+                            }
+                            onClose();
+                        } catch (error){
+                            alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+                            console.error(error);
+                        } finally {
+                            setLoading(false); 
+                            onClose();
+
                         }
-                        const resp = await post('contracts/booking',newBody);   
-                        if (resp.status=="SUCCESS") {
-                            alert("Tạo hợp đồng thành công");                            
-                        } else {
-                            alert("Tạo hợp đồng thất bại, thủ lại sau");
-                        }
-                        onClose();
                     }}>
-                        Thanh toán
+                        {loading ? "Đang xử lý..." : "Thanh toán"}
                     </Button>
                     <Button variant="outlined" onClick={onClose}>
                         Hủy

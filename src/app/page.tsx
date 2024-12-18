@@ -29,9 +29,6 @@ const GENDER_OPTIONS = [
 
 
 export default function Home() {
-  const handleVerificationComplete = (verificationId: string) => {
-    console.log('Verification ID:', verificationId);
-  };
   const router = useRouter();
   const [rooms, setRooms] = useState<Room[]>([])
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +60,7 @@ export default function Home() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await get(`rooms?page_id=1&per_page=-1`);
+        const response = await get(`rooms?page_id=1&per_page=-1&status=1,2,3`);
         setRooms(response.data);
       } catch (error) {
         setError('Failed to fetch rooms. Please try again later.');
@@ -79,7 +76,6 @@ export default function Home() {
 
   return (
     <Box component="section" sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", width: '100%' }}>
-
       <Container
         maxWidth="xl"
         sx={{
@@ -112,9 +108,9 @@ export default function Home() {
               <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2, mb: 2, justifyContent: 'space-between' }}>
 
                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h6" gutterBottom>
+                  {/* <Typography variant="h6" gutterBottom>
                     Địa chỉ:
-                  </Typography>
+                  </Typography> */}
 
                   <AddressSelector onLocationChange={handleLocationChange} />
                 </Box>
@@ -135,7 +131,7 @@ export default function Home() {
                   </Select>
                 </FormControl>
 
-                <FormControl sx={{ minWidth: 180 }}>
+                {/* <FormControl sx={{ minWidth: 180 }}>
                   <InputLabel>Giới tính</InputLabel>
                   <Select
                     value={filters.gender}
@@ -148,9 +144,9 @@ export default function Home() {
                       </MenuItem>
                     ))}
                   </Select>
-                </FormControl>
+                </FormControl> */}
 
-                <Button
+                {/* <Button
                   variant="contained"
                   size="large"
                   startIcon={<SearchIcon />}
@@ -164,7 +160,7 @@ export default function Home() {
                     // }
                   }}
                 >
-                </Button>
+                </Button> */}
               </Box>
 
 

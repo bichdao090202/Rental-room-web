@@ -22,6 +22,7 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
     const [modalInvoice, setModalInvoice] = useState(false);
     const [invoice, setInvoice] = useState<any>();
     const [open, setOpen] = useState(false);
+    const [month, setMonth] = useState<number>(0);
 
     const fetchContracts = async () => {
         try {
@@ -30,6 +31,14 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
             console.log(res);
             if (!result) return;
             setContract(result);
+
+            let maxMonth = 0;
+            result.invoices.map((invoice: any) => {
+                if (invoice.at_month > maxMonth) {
+                    maxMonth = invoice.at_month;
+                }
+            })
+            setMonth(maxMonth);
         } catch (error) {
             console.error('Error fetching booking requests:', error);
         }
@@ -37,6 +46,7 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
 
     const handleModalCreate = () => {
         setModalCreate(false);
+        fetchContracts();
     };
 
     const handleModalInvoice = () => {
@@ -95,7 +105,7 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
                         Ngày bắt đầu: {formatDay(new Date(contract.start_date))}
                     </Typography>
                     <Typography  >
-                        Thời gian thuê: {contract.payment} tháng
+                        Thời gian thuê: {contract.rental_duration} tháng
                     </Typography>
 
                     <Box sx={{ mt: '10px' }}></Box>
@@ -110,7 +120,7 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
                                 <Grid container alignItems="center" justifyContent="space-between" style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '9px' }}>
                                     <Grid item>
                                         <Typography variant="body1">
-                                            <strong>Thời gian:</strong> {formatDatetime(new Date(invoice.start_date))}
+                                            <strong>Thời gian:</strong> {formatDatetime(new Date(invoice.created_at))}
                                         </Typography>
                                         <Typography variant="body1">
                                             <strong>Số tiền:</strong> {formatCurrency(invoice.amount)}
@@ -140,7 +150,7 @@ export const ModalOrder: React.FC<PaymentModalProps> = ({ onClose, contractId, t
 
                     <Box sx={{ mt: '10px' }}></Box>
 
-                    {type == 'renter' &&
+                    {type == 'renter' && month < contract.rental_duration &&
                         <Button variant="contained" sx={{ mt: '10px' }} onClick={() => {
                             setModalCreate(true);
                         }}>Tạo hóa đơn</Button>

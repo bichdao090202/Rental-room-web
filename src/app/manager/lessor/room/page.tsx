@@ -8,6 +8,7 @@ import { formatCurrency } from '@/common/utils/helpers';
 import { useRouter } from 'next/navigation';
 import { getRoomTypeNameById } from './create/CreateRoomForm';
 import getRoomStatus from './getRoomStatus';
+import { getSession } from 'next-auth/react';
 
 
 export default function Page() {
@@ -55,8 +56,9 @@ export default function Page() {
     ]
 
     const fetchRooms = async () => {
+        const session = await getSession();
         try {
-            const response = await get(`rooms?page_id=1&per_page=-1`)
+            const response = await get(`rooms?page_id=1&per_page=-1&status=0,1,2,3&owner_id=${session?.user.id}`);
             const result = response.data;
             console.log(result);
             setRooms(result);

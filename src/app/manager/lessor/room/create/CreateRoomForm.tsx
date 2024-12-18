@@ -17,7 +17,7 @@ export function getRoomTypeNameById(id: number): string {
 
 const CreateRoomForm: React.FC = () => {
     const { data: session } = useSession();
-    const [formData, setFormData] = useState<RoomFormData>(listRoom[0]);
+    const [formData, setFormData] = useState<RoomFormData>(listRoom[2]);
     const [newService, setNewService] = useState<Service>({
         name: '',
         price: 0,
@@ -153,6 +153,7 @@ const CreateRoomForm: React.FC = () => {
         setFormData((prev) => ({
             ...prev,
             ward_id: location.ward_id,
+            owner_id: session?.user?.id ? Number(session.user.id) : 1,
         }));
     };
 
@@ -160,6 +161,7 @@ const CreateRoomForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log(formData);
         const res = await post('rooms', formData);
         if (res.status == "SUCCESS") {
             alert("Tạo phòng thành công");
@@ -512,7 +514,7 @@ const listRoom: RoomFormData[] = [
         acreage: 25,
         price: 3000000,
         description: "Phòng trọ nằm ngay trung tâm thành phố, một vị trí lý tưởng giúp bạn dễ dàng di chuyển đến các quận lân cận như Quận 1, Quận 3, và Bình Thạnh.\nVới vị trí đắc địa, chỉ mất vài phút để đến các địa điểm quan trọng như siêu thị, trung tâm thương mại, trường học, bệnh viện, và trạm xe buýt, phòng trọ là lựa chọn tuyệt vời cho những ai đang tìm kiếm sự tiện lợi trong cuộc sống hàng ngày.\n\nKhu vực này nổi bật với môi trường sống an toàn, có bảo vệ 24/7 và hệ thống camera giám sát đảm bảo an ninh tuyệt đối.\nBạn có thể yên tâm về sự riêng tư và an toàn của bản thân cũng như tài sản cá nhân.\nPhòng được trang bị đầy đủ các tiện nghi cần thiết như giường ngủ, tủ quần áo, bàn học, máy lạnh, và tủ lạnh mini, đáp ứng tốt các nhu cầu sinh hoạt cơ bản.\n\nPhòng thoáng mát với cửa sổ lớn đón ánh sáng tự nhiên, mang đến không gian sống rộng rãi và dễ chịu.\nNgoài ra, giá thuê phòng đã bao gồm internet tốc độ cao, giúp bạn làm việc, học tập, hay giải trí trực tuyến một cách thoải mái.\nPhòng rất phù hợp cho sinh viên, nhân viên văn phòng, hoặc những ai mong muốn một không gian sống tiện nghi và hiện đại ngay giữa lòng thành phố.",
-        owner_id: 0,
+        owner_id: 1,
         max_people: 3,
         room_type: 1,
         deposit: 3000000,

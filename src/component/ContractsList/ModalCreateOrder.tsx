@@ -77,7 +77,6 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
 
         const serviceDemands: ServiceDemand[] = contract.services_history.map((service: any) => ({
             service_history_id: service.id,
-            contract_id: contractId,
             quality: quantities[service.id],
             amount: service.price * quantities[service.id],
             based_price: service.price,
@@ -90,19 +89,24 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
             amount: totalAmount,
             transaction_id: 1,
             at_month: month,
-            start_date: new Date().toISOString(),
             service_demands: serviceDemands
         };
 
         const invoiceBody = {
             ...orderData,
-            transaction_id: 178
         };
 
         const invoice = await post('invoices', invoiceBody);
-        setModalMessage('Tạo hóa đơn thành công');
-        setShowSuccessModal(true);
+        console.log(invoiceBody);
+        setModalMessage('Tạo hóa đơn thành công với tổng chi phí là ' + totalAmount.toLocaleString() + ' VNĐ');
+        setShowSuccessModal(true); 
+
     };
+
+    const close = async () => {
+        onClose();
+        setShowSuccessModal(false);
+    }
 
     if (!contract) {
         return <Loading />;
@@ -229,10 +233,10 @@ export const ModalCreateOrder: React.FC<PaymentModalProps> = ({ onClose, contrac
 
                 <CustomModal
                     open={showSuccessModal}
-                    onClose={() => setShowSuccessModal(false)}
+                    onClose={() => close()}
                     title="Thông báo"
                     type="confirm"
-                    onConfirm={() => setShowSuccessModal(false)}
+                    onConfirm={() => close()}
                 >
                     <Typography>{modalMessage}</Typography>
                 </CustomModal>

@@ -9,7 +9,7 @@ export default function SocialLogin() {
   return (
     <Box component="div" sx={{ display: 'flex', gap: 2 }}>
       <Button component="label" variant="outlined" color="primary" onClick={() => signIn('google', { callbackUrl: '/' })} startIcon={<GoogleIcon />}>
-        Login with Google
+        Đăng nhập với Google
       </Button>
     </Box>
   )

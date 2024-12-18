@@ -12,7 +12,7 @@ import { getSession, signIn, useSession } from "next-auth/react";
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
-  const [formValue, setFormValue] = useState({ phone: '0905015623', password: '1231' });
+  const [formValue, setFormValue] = useState({ phone: '', password: '' });
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (event: any) => {
@@ -37,7 +37,7 @@ export default function LoginPage() {
   return (
     <>
       <Box component="div" sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Typography variant="h3" sx={{ textAlign: 'center', marginTop: 15 }}>Đăng nhập</Typography>
+        <Typography variant="h3" sx={{ textAlign: 'center', marginTop: 15 }}>Đăng ký</Typography>
         <Box component="div" sx={{ marginTop: 1 }}>
           <Box component="form" onSubmit={onSubmit}>
             <ValidateTextField
@@ -73,17 +73,38 @@ export default function LoginPage() {
               </InputAdornment>
               }
             />
+            <ValidateTextField
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              label="Nhập lại mật khẩu"
+              placeholder="Passowrd"
+              value={formValue.password}
+              onChange={(event) => setFormValue({ ...formValue, password: event.target.value })}
+              required
+              error={!formValue.password} variant={"outlined"}
+              errorText="Please enter your password"
+              endadornment={<InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+              }
+            />
             <Box component="div">
               <Button type="submit" variant="contained" color="primary" sx={{ width: '100%', padding: 2, fontSize: 16 }}>
-                Đăng nhập
+                Đăng ký
               </Button>
-              <Typography sx={{ textAlign: 'center', marginTop: 2 }}>bạn <Link href="/forgot-password" className="font-bold underline">Quên mật khẩu?</Link></Typography>
-            </Box>
+              </Box>
           </Box>
         </Box>
         <Box component="div" sx={{ margin: 2 }}>
           <SocialLogin />
-          <Typography sx={{ marginTop: 2, textAlign: "center" }}>Chưa có tài khoản? <Link href="/auth/sign-up" className="font-bold underline">Đăng ký</Link></Typography>
+          <Typography sx={{ marginTop: 2, textAlign: "center" }}>Đã có tài khoản? <Link href="/auth/login" className="font-bold underline">Đăng nhập</Link></Typography>
         </Box>
       </Box>
     </>

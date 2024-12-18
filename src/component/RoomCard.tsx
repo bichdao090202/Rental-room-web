@@ -1,3 +1,4 @@
+import getRoomStatus from "@/app/manager/lessor/room/getRoomStatus";
 import { formatCurrency } from "@/common/utils/helpers";
 import { Room } from "@/types";
 import { Card, CardContent, CardMedia, Typography } from "@mui/material";
@@ -45,6 +46,9 @@ interface RoomCardProps {
             {`${isNaN(Number(room.address.ward_name)) ? room.address.ward_name : `Phường ${room.address.ward_name}`
                   }, ${isNaN(Number(room.address.district_name)) ? room.address.district_name : `Quận ${room.address.district_name}`
                   }, ${room.address.province_name}`}
+          </Typography>
+          <Typography gutterBottom variant="h6" component="div" sx={{ color: room.status === 1 ? 'green' : room.status === 2 ? 'gray' : 'red' }}>
+            {getRoomStatus(room.status)}
           </Typography>
         </CardContent>
       </Card>

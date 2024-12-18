@@ -53,7 +53,7 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     width: '80vw',
-                    height: '50vh',
+                    height: 'auto',
                     bgcolor: 'background.paper',
                     boxShadow: 24,
                     p: 4,
@@ -118,8 +118,12 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         <Button variant="contained" sx={{ background: 'primary' }} onClick={async () => {
                             const session = await getSession();
                             const body = {
+                                ...contract,
+                                renter_id: contract?.renter.id,
+                                lessor_id: contract?.lessor.id,
+
                                 cancel_status: 1,
-                                cancel_by: session?.user.id,
+                                canceled_by: session?.user.id,
                                 contract_id: contract.id,
                             }
                             const res = await post(`contracts/cancel`, body)
@@ -137,9 +141,13 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                     <Box display="flex" justifyContent="flex-end" gap={2}>
                         <Button variant="contained" sx={{ background: 'primary' }} onClick={async () => {
                             const body = {
+                                ...contract,
+                                renter_id: contract?.renter.id,
+                                lessor_id: contract?.lessor.id,
+                                
+                                canceled_by: contract?.canceled_by,
                                 cancel_status: 3,
                                 status: 5,
-                                canceled_by: contract?.canceled_by.id,
                                 contract_id: contract.id,
                             }
                             const res = await post(`contracts/cancel`, body)
@@ -151,6 +159,10 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         </Button>
                         <Button variant="contained" onClick={async () => {
                             const body = {
+                                ...contract,
+                                renter_id: contract?.renter.id,
+                                lessor_id: contract?.lessor.id,
+
                                 cancel_status: 0,
                                 canceled_by: null,
                                 contract_id: contract.id,
@@ -167,12 +179,17 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                     <Box display="flex" justifyContent="flex-end" gap={2}>
                         <Button variant="contained" sx={{ background: 'primary' }} onClick={async () => {
                             const body = {
+                                ...contract,
+                                renter_id: contract?.renter.id,
+                                lessor_id: contract?.lessor.id,
+                                room_id: contract?.room!.id,
+
+                                canceled_by: contract?.canceled_by,
                                 cancel_status: 3,
                                 status: 6,
-                                canceled_by: contract?.canceled_by.id,
                                 contract_id: contract.id,
                             }
-                            const res = await put(`contracts/${contract.id}`, body)
+                            const res = await post(`contracts/cancel`, body)
                             createTransaction(contract?.lessor.id, 'REFUND', contract.room!.deposit, contract?.id)
                             createTransaction(contract?.renter.id, 'REFUND', contract.room!.deposit, contract?.id)
                             onClose()
@@ -181,12 +198,16 @@ export const ModalCancelContract: React.FC<PaymentModalProps> = ({ onClose, cont
                         </Button>
                         <Button variant="contained" onClick={async () => {
                             const body = {
+                                ...contract,
+                                renter_id: contract?.renter.id,
+                                lessor_id: contract?.lessor.id,
+
+                                canceled_by: contract?.canceled_by,
                                 cancel_status: 2,
-                                canceled_by: contract?.canceled_by.id,
                                 contract_id: contract.id,
                             }
                             console.log(body)
-                            await put(`contracts/${contract.id}`, body)
+                            const res = await post(`contracts/cancel`, body)
                             onClose()
                         }}>
                             Không đồng ý

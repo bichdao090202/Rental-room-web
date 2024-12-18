@@ -233,7 +233,7 @@ export default function ContractsList({ type }: { type: 'renter' | 'lessor' }) {
                     }
 
                     {
-                        row.canceled_by != null && row.canceled_by == session?.user.id && row.cancel_status == 2 &&
+                         row.canceled_by == session?.user.id && row.cancel_status == 2 &&
                         <Button variant="contained" color="primary" onClick={() => {
                             setContractId(row.id);
                             setTypeModal('confirm');

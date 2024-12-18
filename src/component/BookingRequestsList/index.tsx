@@ -13,6 +13,7 @@ import CustomModal from '@/common/components/modal';
 import { base64ToFile, getBase64FromPdf } from '@/common/utils/helpers';
 import PdfUploader from '@/common/components/PdfUploader';
 import LoadingBox from '@/common/components/LoadingBox';
+import UserModal from './UserModal';
 
 export function getBookingStatus(status: number): string {
     switch (status) {
@@ -47,6 +48,8 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
     const [loading, setLoading] = useState(false);
     const [successModalOpen, setSuccessModalOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [userModal, setUserModal] = useState(false);
+    const [user, setUser] = useState<any>();
 
     const headCells: HeadCell[] = [
         { id: 'start_date', label: 'Ngày bắt đầu' },
@@ -115,19 +118,30 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                         />
                     )}
                     {type == 'lessor' && (
-                        <Button variant="contained" color="warning" >
+                        <Button variant="contained" color="warning" 
+                        onClick={() => {
+                            console.log(row.lessor);
+                            
+                            setUser(row.renter);
+                            setUserModal(true);
+                        }}                        
+                        >
                             Người thuê
                         </Button>
                     )}
 
                     {type == 'renter' && (
-                        <Button variant="contained" color="warning" >
+                        <Button variant="contained" color="warning" 
+                        onClick={() => {
+                            setUser(row.lessor);
+                            setUserModal(true);
+                        }}                        
+                        >
                             Chủ trọ
                         </Button>
                     )}
                 </Box>
         },
-
     ]
 
     const fetchBookingRequests = async () => {
@@ -152,21 +166,18 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
     const handleClose = () => setOpen(false);
     const handleConfirm = async () => {
         setLoading(true);
-        const body ={
+        const body = {
             user_id: "083202010950",
             provider: "VNPT",
         }
         try {
-            const res = await post('https://mallard-fluent-lightly.ngrok-free.app/api/sign/get_certificate', body, false);
-            console.log(res)
-            alert('Thành công')
+            const fileBase64 = await getBase64FromPdf(selectedFile!);
+            await handleSignDoc(fileBase64!);
         } catch {
-            alert('Lỗi, thử lại sau')
+            
         }
-        
-        // const fileBase64 = await getBase64FromPdf(selectedFile!);
-        // await handleSignDoc(fileBase64!);
         setLoading(false);
+        setOpen(false)
     };
 
     const updateBookingRequest = async (basa64: any) => {
@@ -177,28 +188,30 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
             message_from_lessor: basa64!,
         };
         console.log(basa64);
-        // const res = await put(`booking-requests/${selectedRequest.id}`, updatedRequest);
-        // console.log(res);
-        // setBookingRequests(bookingRequests =>
-        //     bookingRequests.map(obj => obj.id === selectedRequest.id ? res.data : obj)
-        // );
+        const res = await put(`booking-requests/${selectedRequest.id}`, updatedRequest);
+        console.log(res);
+        setBookingRequests(bookingRequests =>
+            bookingRequests.map(obj => obj.id === selectedRequest.id ? res.data : obj)
+        );
     }
 
     const handleSignDoc = async (fileBase64: string) => {
         const body = {
             user_id: "083202010950",
-            serial_number: "54010101b710e8055dcb29e10f1aa584",
+            serial_number: "54010101eec8a59ad71b4777401e27f4",
+            transaction_id: "da25ed27-7bfe-495f-89fd-06723a584094",
+            time_stamp: "2024-09-17T15:58:01+07:00",
             image_base64: "",
             rectangles: [
                 {
                     number_page_sign: 1,
                     margin_top: 100,
-                    margin_left: 100,
-                    margin_right: 500,
-                    margin_bottom: 100
+                    margin_left: 10,
+                    margin_right: 250,
+                    margin_bottom: 200
                 }
             ],
-            visible_type: 0,
+            visible_type: 1,
             contact: "",
             font_size: 12,
             sign_files: [
@@ -207,7 +220,8 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                     doc_id: "32c-7401-25621",
                     file_type: "pdf",
                     sign_type: "hash",
-                    file_base64: fileBase64
+                    file_base64: fileBase64,
+                    tag_save_signature: ""
                 }
             ]
         };
@@ -215,14 +229,12 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
         try {
             const res = await post('https://mallard-fluent-lightly.ngrok-free.app/api/sign/sign_document', body, false);
             console.log(res)
-            const file = base64ToFile(res[0].signedData, "DocumentSigned.pdf");
+            const file = base64ToFile(res[0].signed_data, "DocumentSigned.pdf");
             if (!file) return;
-            updateBookingRequest(res[0].signedData);
-            setOpen(false)
+            updateBookingRequest(res[0].signed_data);            
             setSuccessModalOpen(true);
         } catch {
             alert('Lỗi, thử lại sau')
-            fetchBookingRequests();
         }
 
 
@@ -281,12 +293,19 @@ export default function BookingRequestsList({ type }: { type: 'renter' | 'lessor
                             price: request.room.price,
                             deposit: request.room.deposit,
                             base64: request.message_from_lessor,
+                            lessor: request.lessor,
+                            renter: request.renter,
                         }}
                         headCells={headCells}
                     />
                 ))}
             </Box>
             {paymentModal && <PaymentModal onClose={handlePaymentModal} order={order} />}
+            {
+                userModal &&
+                <UserModal open={userModal} onClose={() => setUserModal(false)} user={user} />
+            }
+    
 
             {selectedRequest && <CustomModal    //for lessor
                 open={open}
